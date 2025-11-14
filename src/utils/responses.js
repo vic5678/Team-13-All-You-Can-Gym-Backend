@@ -1,8 +1,8 @@
-export const successResponse = (res, data, message = 'Operation successful') => {
-    return res.status(200).json({
+export const successResponse = (res, statusCode, message, data) => {
+    return res.status(statusCode || 200).json({
         success: true,
-        data,
         message,
+        data,
     });
 };
 
@@ -14,11 +14,11 @@ export const createdResponse = (res, data, message = 'Resource created successfu
     });
 };
 
-export const errorResponse = (res, error, message = 'An error occurred') => {
-    return res.status(error.status || 500).json({
+export const errorResponse = (res, statusCode, message, error) => {
+    return res.status(statusCode || 500).json({
         success: false,
-        error,
         message,
+        error: error ? error.message : 'An internal server error occurred',
     });
 };
 
