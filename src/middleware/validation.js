@@ -34,6 +34,8 @@ export const validateUserRegistration = [
         next();
     }
 ];
+
+/**
  * Validate incoming request data
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
