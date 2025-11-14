@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import bcrypt from 'bcryptjs';
 import Session from '../models/session.js';
-// import User from '../models/User.js';
+import User from '../models/user.js';
 // import Gym from '../models/Gym.js';
 // import Announcement from '../models/announcement.js';
 // import Paymnent from '../models/payment.js';
@@ -10,10 +11,11 @@ import Session from '../models/session.js';
 
 // Mock data for fallback
 const mockData = {
-    // users: [
-    //     { username: 'user1', email: 'user1@example.com' },
-    //     { username: 'user2', email: 'user2@example.com' }
-    // ],
+    
+    users: [
+        { username: 'user1', email: 'user1@example.com', password: 'password123', isSubscribed: true, packageID: 'pkg_premium' },
+        { username: 'user2', email: 'user2@example.com', password: 'password456', isSubscribed: false, packageID: null }
+    ],
     // gyms: [
     //     { name: 'Gym A', location: 'Location A' },
     //     { name: 'Gym B', location: 'Location B' }
@@ -36,12 +38,19 @@ const connectDB = async () => {
             });
             console.log('In-memory MongoDB connected successfully.');
             // Populate the in-memory DB with mockData
+            const salt = await bcrypt.genSalt(10);
+            for (let user of mockData.users) {
+                user.password = await bcrypt.hash(user.password, salt);
+            }
             await Promise.all([
-                // User.insertMany(mockData.users),
+                User.insertMany(mockData.users),
                 // Gym.insertMany(mockData.gyms),
                 Session.insertMany(mockData.sessions),
             ]);
             console.log('In-memory database populated with mock data.');
+            const users = await User.find({});
+            console.log('User IDs created:');
+            users.forEach(user => console.log(user._id));
             return;
         }
         await mongoose.connect(process.env.MONGO_URI, {
