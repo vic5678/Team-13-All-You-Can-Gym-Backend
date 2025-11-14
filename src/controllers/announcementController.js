@@ -1,4 +1,5 @@
 import Announcement from '../models/announcement.js';
+import Session from '../models/session.js';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 
@@ -9,6 +10,19 @@ import { successResponse, errorResponse } from '../utils/responses.js';
  */
 export const createAnnouncement = async (req, res) => {
     try {
+        const { sessionId } = req.body;
+        
+        // Validate that sessionId is provided
+        if (!sessionId) {
+            return errorResponse(res, 400, 'Session ID is required');
+        }
+        
+        // Verify that the session exists
+        const session = await Session.findById(sessionId);
+        if (!session) {
+            return errorResponse(res, 404, ERROR_MESSAGES.SESSION_NOT_FOUND);
+        }
+        
         const announcement = new Announcement(req.body);
         await announcement.save();
         return successResponse(res, 201, SUCCESS_MESSAGES.ANNOUNCEMENT_CREATED, announcement);

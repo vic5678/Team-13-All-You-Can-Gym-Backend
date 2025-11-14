@@ -21,10 +21,6 @@ const mockData = {
     sessions: [
         { name: 'Yoga Class', dateTime: '2025-11-20T10:00:00Z', description: 'A relaxing yoga session for all levels.', type: 'Group', capacity: 20, trainerName: 'Jane Doe' },
         { name: 'HIIT Class', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'Group', capacity: 15, trainerName: 'John Smith' }
-    ],
-    announcements: [
-        { content: 'Welcome to All You Can Gym! Check out our new fitness classes starting next week.' },
-        { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.' }
     ]
 };
 
@@ -40,12 +36,13 @@ const connectDB = async () => {
             });
             console.log('In-memory MongoDB connected successfully.');
             // Populate the in-memory DB with mockData
-            await Promise.all([
-                // User.insertMany(mockData.users),
-                // Gym.insertMany(mockData.gyms),
-                Session.insertMany(mockData.sessions),
-                Announcement.insertMany(mockData.announcements),
-            ]);
+            // Insert sessions first, then use their IDs for announcements
+            const insertedSessions = await Session.insertMany(mockData.sessions);
+            const announcements = [
+                { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
+                { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
+            ];
+            await Announcement.insertMany(announcements);
             console.log('In-memory database populated with mock data.');
             return;
         }

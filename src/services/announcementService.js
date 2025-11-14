@@ -1,4 +1,5 @@
 import Announcement from '../models/announcement.js';
+import Session from '../models/session.js';
 import { ERROR_MESSAGES } from '../config/constants.js';
 
 /**
@@ -9,13 +10,27 @@ class AnnouncementService {
      * Create a new announcement.
      * @param {Object} announcementData - The data for the announcement.
      * @returns {Promise<Object>} - The created announcement.
+     * @throws {Error} - If sessionId is missing or session doesn't exist.
      */
     async createAnnouncement(announcementData) {
         try {
+            const { sessionId } = announcementData;
+            
+            // Validate that sessionId is provided
+            if (!sessionId) {
+                throw new Error('Session ID is required');
+            }
+            
+            // Verify that the session exists
+            const session = await Session.findById(sessionId);
+            if (!session) {
+                throw new Error(ERROR_MESSAGES.SESSION_NOT_FOUND);
+            }
+            
             const announcement = new Announcement(announcementData);
             return await announcement.save();
         } catch (error) {
-            throw new Error(ERROR_MESSAGES.INVALID_INPUT);
+            throw error;
         }
     }
 
