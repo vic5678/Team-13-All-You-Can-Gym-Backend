@@ -3,7 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import Session from '../models/session.js';
 // import User from '../models/User.js';
 // import Gym from '../models/Gym.js';
-// import Announcement from '../models/announcement.js';
+import Announcement from '../models/announcement.js';
 // import Paymnent from '../models/payment.js';
 // import Subscription from '../models/subscription.js';
 // import SubscriptionPackage from '../models/subscriptionPackage.js';
@@ -21,6 +21,10 @@ const mockData = {
     sessions: [
         { name: 'Yoga Class', dateTime: '2025-11-20T10:00:00Z', description: 'A relaxing yoga session for all levels.', type: 'Group', capacity: 20, trainerName: 'Jane Doe' },
         { name: 'HIIT Class', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'Group', capacity: 15, trainerName: 'John Smith' }
+    ],
+    announcements: [
+        { content: 'Welcome to All You Can Gym! Check out our new fitness classes starting next week.' },
+        { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.' }
     ]
 };
 
@@ -40,6 +44,7 @@ const connectDB = async () => {
                 // User.insertMany(mockData.users),
                 // Gym.insertMany(mockData.gyms),
                 Session.insertMany(mockData.sessions),
+                Announcement.insertMany(mockData.announcements),
             ]);
             console.log('In-memory database populated with mock data.');
             return;
