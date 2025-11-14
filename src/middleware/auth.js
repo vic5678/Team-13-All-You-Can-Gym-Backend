@@ -9,6 +9,8 @@ import { ERROR_MESSAGES } from '../config/constants.js';
  * @param {Function} next - The next middleware function.
  */
 export const authenticate = async (req, res, next) => {
+    // next();
+    // return;
     try {
         // Get token from headers
         const token = req.headers.authorization?.split(' ')[1];
@@ -31,4 +33,22 @@ export const authenticate = async (req, res, next) => {
             message: ERROR_MESSAGES.INVALID_TOKEN,
         });
     }
+};
+
+/**
+ * Middleware to authorize if the user is accessing their own resource.
+ * It checks if the authenticated user's ID matches the 'userId' parameter in the route.
+ * This should be used after the `authenticate` middleware.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
+export const authorizeSelf = (req, res, next) => {
+    if (req.user?.id !== req.params.userId) {
+        return res.status(403).json({
+            success: false,
+            message: 'Forbidden: You do not have permission to perform this action on another user\'s resource.',
+        });
+    }
+    next();
 };
