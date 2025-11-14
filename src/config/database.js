@@ -3,7 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import Session from '../models/session.js';
 // import User from '../models/User.js';
 // import Gym from '../models/Gym.js';
-// import Announcement from '../models/announcement.js';
+import Announcement from '../models/announcement.js';
 // import Paymnent from '../models/payment.js';
 // import Subscription from '../models/subscription.js';
 // import SubscriptionPackage from '../models/subscriptionPackage.js';
@@ -36,11 +36,13 @@ const connectDB = async () => {
             });
             console.log('In-memory MongoDB connected successfully.');
             // Populate the in-memory DB with mockData
-            await Promise.all([
-                // User.insertMany(mockData.users),
-                // Gym.insertMany(mockData.gyms),
-                Session.insertMany(mockData.sessions),
-            ]);
+            // Insert sessions first, then use their IDs for announcements
+            const insertedSessions = await Session.insertMany(mockData.sessions);
+            const announcements = [
+                { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
+                { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
+            ];
+            await Announcement.insertMany(announcements);
             console.log('In-memory database populated with mock data.');
             return;
         }
