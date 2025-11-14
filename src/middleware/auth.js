@@ -11,6 +11,7 @@ import { ERROR_MESSAGES } from '../config/constants.js';
 export const authenticate = async (req, res, next) => {
     // next();
     // return;
+    
     try {
         // Get token from headers
         const token = req.headers.authorization?.split(' ')[1];
