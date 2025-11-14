@@ -7,11 +7,12 @@ import {
   deleteSession,
   searchSessions
 } from '../controllers/sessionController.js';
+import { validateCreateSession } from '../middleware/validation.js';
 
 const router = express.Router();
 
 // Route to create a new session
-router.post('/', createSession);
+router.post('/', validateCreateSession, createSession);
 
 // Route to get all sessions
 router.get('/', getAllSessions);
