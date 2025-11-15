@@ -53,11 +53,10 @@ router.post('/:userId/subscription', createSubscription);
 router.get('/:userId/subscription', getUserSubscriptions);
 
 // Route to update a user's subscription
-router.put('/:userId/subscription', updateSubscription);
+router.put('/:userId/subscription/:subscriptionId', updateSubscription);
 
 // Route to cancel a user's subscription
-router.delete('/:userId/subscription', cancelSubscription);
-
+router.delete('/:userId/subscription/:subscriptionId', cancelSubscription);
 
 // Session booking routes
 // Route to book a user into a session

@@ -1,7 +1,6 @@
 import Subscription from '../models/subscription.js';
 import User from '../models/user.js';
 import SubscriptionPackage from '../models/subscriptionPackage.js';
-import { successResponse, errorResponse } from '../utils/responses.js';
 
 /**
  * Get all subscription packages.
@@ -10,9 +9,9 @@ import { successResponse, errorResponse } from '../utils/responses.js';
 export const getAllSubscriptionPackages = async () => {
     try {
         const packages = await SubscriptionPackage.find();
-        return successResponse(packages, 'All subscription packages retrieved successfully');
+        return { status: 'success', data: packages, message: 'All subscription packages retrieved successfully' };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to retrieve subscription packages');
+        return { status: 'error', message: 'Failed to retrieve subscription packages', data: error.message, statusCode: 500 };
     }
 };
 
@@ -25,11 +24,11 @@ export const getSubscriptionPackageById = async (packageId) => {
     try {
         const pkg = await SubscriptionPackage.findById(packageId);
         if (!pkg) {
-            return errorResponse('Subscription package not found', 'Subscription package not found', 404);
+            return { status: 'error', message: 'Subscription package not found', statusCode: 404 };
         }
-        return successResponse(pkg, 'Subscription package retrieved successfully');
+        return { status: 'success', data: pkg, message: 'Subscription package retrieved successfully' };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to retrieve subscription package');
+        return { status: 'error', message: 'Failed to retrieve subscription package', data: error.message, statusCode: 500 };
     }
 };
 
@@ -44,7 +43,7 @@ export const createSubscription = async (userId, subscriptionPackageId, startDat
     try {
         const subscriptionPackage = await SubscriptionPackage.findById(subscriptionPackageId);
         if (!subscriptionPackage) {
-            return errorResponse('Subscription package not found', 'Subscription package not found', 404);
+            return { status: 'error', message: 'Subscription package not found', statusCode: 404 };
         }
 
         const sDate = new Date(startDate);
@@ -61,9 +60,9 @@ export const createSubscription = async (userId, subscriptionPackageId, startDat
         await newSubscription.save();
         await User.findByIdAndUpdate(userId, { isSubscribed: true, packageID: subscriptionPackage.id });
 
-        return successResponse(newSubscription, 'Subscription created successfully.');
+        return { status: 'success', data: newSubscription, message: 'Subscription created successfully.', statusCode: 201 };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to create subscription.');
+        return { status: 'error', message: 'Failed to create subscription.', data: error.message, statusCode: 500 };
     }
 };
 
@@ -75,9 +74,9 @@ export const createSubscription = async (userId, subscriptionPackageId, startDat
 export const getUserSubscriptions = async (userId) => {
     try {
         const subscriptions = await Subscription.find({ userId });
-        return successResponse(subscriptions, 'Subscriptions retrieved successfully.');
+        return { status: 'success', data: subscriptions, message: 'Subscriptions retrieved successfully.' };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to retrieve subscriptions.');
+        return { status: 'error', message: 'Failed to retrieve subscriptions.', data: error.message, statusCode: 500 };
     }
 };
 
@@ -96,50 +95,39 @@ export const updateSubscription = async (userId, subscriptionId, updateData) => 
             { new: true }
         );
         if (!updatedSubscription) {
-            return errorResponse('Subscription not found', 'Subscription not found', 404);
+            return { status: 'error', message: 'Subscription not found', statusCode: 404 };
         }
-        return successResponse(updatedSubscription, 'Subscription updated successfully.');
+        return { status: 'success', data: updatedSubscription, message: 'Subscription updated successfully.' };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to update subscription.');
+        return { status: 'error', message: 'Failed to update subscription.', data: error.message, statusCode: 500 };
     }
 };
 
 /**
- * Cancel a user's subscription.
+ * Deletes a user's subscription.
  * @param {string} userId - The ID of the user.
  * @param {string} subscriptionId - The ID of the subscription.
- * @returns {Promise<Object>} - The canceled subscription.
+ * @returns {Promise<Object>} - The deleted subscription.
  */
 export const cancelSubscription = async (userId, subscriptionId) => {
     try {
-        const canceledSubscription = await Subscription.findOneAndUpdate(
-            { _id: subscriptionId, userId },
-            { isActive: false },
-            { new: true }
+        const deletedSubscription = await Subscription.findOneAndDelete(
+            { _id: subscriptionId, userId }
         );
 
-        if (!canceledSubscription) {
-            return errorResponse('Subscription not found', 'Subscription not found', 404);
+        if (!deletedSubscription) {
+            return { status: 'error', message: 'Subscription not found or user does not have permission to delete it.', statusCode: 404 };
         }
 
-        await User.findByIdAndUpdate(userId, { isSubscribed: false, packageID: null });
+        // Find if the user has any other active subscriptions before setting isSubscribed to false
+        const otherSubscriptions = await Subscription.findOne({ userId, isActive: true });
+        if (!otherSubscriptions) {
+            await User.findByIdAndUpdate(userId, { isSubscribed: false, packageID: null });
+        }
 
-        return successResponse(canceledSubscription, 'Subscription canceled successfully.');
-    } catch (error) {
-        return errorResponse(error.message, 'Failed to cancel subscription.');
-    }
-};
 
-/**
- * Delete a user's subscription.
- * @param {string} subscriptionId - The ID of the subscription.
- * @returns {Promise<Object>} - Confirmation of deletion.
- */
-export const deleteSubscription = async (subscriptionId) => {
-    try {
-        await Subscription.findByIdAndDelete(subscriptionId);
-        return successResponse(null, 'Subscription deleted successfully.');
+        return { status: 'success', data: deletedSubscription, message: 'Subscription deleted successfully.' };
     } catch (error) {
-        return errorResponse(error.message, 'Failed to delete subscription.');
+        return { status: 'error', message: 'Failed to delete subscription.', data: error.message, statusCode: 500 };
     }
 };
