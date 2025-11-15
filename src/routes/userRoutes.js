@@ -11,6 +11,17 @@ import {
     getFriendsList,
     deleteUser
 } from '../controllers/userController.js';
+import {
+    createSubscription,
+    getUserSubscriptions,
+    updateSubscription,
+    cancelSubscription
+} from '../controllers/subscriptionController.js';
+import {
+    bookUserIntoSession,
+    unbookUserFromSession,
+    getUserBookedSessions
+} from '../controllers/sessionController.js';
 import { validateUserRegistration } from '../middleware/validation.js';
 import { authenticate, authorizeSelf } from '../middleware/auth.js';
 
@@ -31,6 +42,34 @@ router.get('/:userId', authenticate, getUserProfile);
 // Update user profile - only the user themselves can update
 router.put('/:userId', [authenticate, authorizeSelf], updateUserProfile);
 
+// Delete user - only the user can delete their own account
+router.delete('/:userId', [authenticate, authorizeSelf], deleteUser);
+
+// Subscription management routes
+// Route to create a new subscription
+router.post('/:userId/subscription', createSubscription);
+
+// Route to get all subscriptions for a user
+router.get('/:userId/subscription', getUserSubscriptions);
+
+// Route to update a user's subscription
+router.put('/:userId/subscription', updateSubscription);
+
+// Route to cancel a user's subscription
+router.delete('/:userId/subscription', cancelSubscription);
+
+
+// Session booking routes
+// Route to book a user into a session
+router.post('/:userId/sessions', authenticate, bookUserIntoSession);
+
+// Route to unbook a user from a session
+router.delete('/:userId/sessions/:sessionId', authenticate, unbookUserFromSession);
+
+// Route to get all sessions a user is booked into
+router.get('/:userId/sessions', authenticate, getUserBookedSessions);
+
+// Friend management routes
 // Send friend request - the sender must be the authenticated user
 router.post('/:userId/friends', [authenticate, authorizeSelf], sendFriendRequest);
 
@@ -43,7 +82,5 @@ router.delete('/:userId/friends/:requestId', [authenticate, authorizeSelf], decl
 // Get friends list - only the user can see their own friends
 router.get('/:userId/friends', [authenticate, authorizeSelf], getFriendsList);
 
-// Delete user - only the user can delete their own account
-router.delete('/:userId', [authenticate, authorizeSelf], deleteUser);
 
 export default router;

@@ -11,8 +11,7 @@ const router = express.Router();
 // Mounting routes
 router.use('/announcements', announcementRoutes);
 router.use('/sessions', sessionRoute);
-router.use('/subscriptions', subscriptionRoutes);
-router.use('/users/:userID/subscriptions', subscriptionRoutes);
+router.use('/subscriptionPackages', subscriptionRoutes);
 router.use('/users', userRouter);
 router.use('/gyms', gymRoutes);
 router.use('/gymAdmins', gymAdminRoutes);
