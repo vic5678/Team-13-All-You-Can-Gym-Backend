@@ -29,6 +29,11 @@ const gymSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Session'
     }]
+    ,
+    keywords: [{
+        type: String,
+        trim: true
+    }]
 }, {
     timestamps: true
 });

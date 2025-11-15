@@ -22,7 +22,8 @@ const mockData = {
             latitude: 40.7128,
             longitude: -74.0060,
             rating: 4.5,
-            sessions: []
+            sessions: [],
+            keywords: ['Powerlifting', 'Yoga', 'Strength']
         },
         {
             name: 'FitLife Studio',
@@ -30,12 +31,13 @@ const mockData = {
             latitude: 38.8977,
             longitude: -77.0365,
             rating: 4.2,
-            sessions: []
+            sessions: [],
+            keywords: ['HIIT', 'Cardio', 'Yoga']
         }
     ],
     sessions: [
-        { name: 'Yoga Class', dateTime: '2025-11-20T10:00:00Z', description: 'A relaxing yoga session for all levels.', type: 'Group', capacity: 20, trainerName: 'Jane Doe' },
-        { name: 'HIIT Class', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'Group', capacity: 15, trainerName: 'John Smith' }
+        { name: 'Yoga Class with Jane', dateTime: '2025-11-20T10:00:00Z', description: 'A relaxing yoga session for all levels.', type: 'Yoga', capacity: 20, trainerName: 'Jane Doe' },
+        { name: 'HIIT Class with John', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'HIIT', capacity: 15, trainerName: 'John Smith' }
     ]
 };
 

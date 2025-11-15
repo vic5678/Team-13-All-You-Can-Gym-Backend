@@ -14,6 +14,12 @@ const router = express.Router();
 // Route to get all partner gyms
 router.get('/', getAllGyms);
 
+// Route to filter gyms based on preferences
+router.get('/filter', filterGyms);
+
+// Route to search gyms by keyword or keywords
+router.get('/search', searchGyms);
+
 // Route to get a gym by ID
 router.get('/:id', getGymById);
 
@@ -25,11 +31,5 @@ router.put('/:id', updateGym);
 
 // Route to delete a gym
 router.delete('/:id', deleteGym);
-
-// Route to filter gyms based on preferences
-router.get('/filter', filterGyms);
-
-// Route to search gyms by keyword
-router.get('/search', searchGyms);
 
 export default router;
