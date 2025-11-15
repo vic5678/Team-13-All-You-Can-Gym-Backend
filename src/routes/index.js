@@ -4,12 +4,15 @@ import sessionRoute from './sessionRoutes.js';
 import userRouter from './userRoutes.js';
 import gymRoutes from './gymRoutes.js';
 import gymAdminRoutes from './gymAdminRoutes.js';
+import subscriptionRoutes from './subscriptionRoutes.js';
 
 const router = express.Router();
 
 // Mounting routes
 router.use('/announcements', announcementRoutes);
 router.use('/sessions', sessionRoute);
+router.use('/subscriptions', subscriptionRoutes);
+router.use('/users/:userID/subscriptions', subscriptionRoutes);
 router.use('/users', userRouter);
 router.use('/gyms', gymRoutes);
 router.use('/gymAdmins', gymAdminRoutes);
