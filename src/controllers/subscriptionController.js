@@ -1,5 +1,5 @@
 import * as subscriptionService from '../services/subscriptionService.js';
-import { successResponse, errorResponse } from '../utils/responses.js';
+import { successResponse, errorResponse, createdResponse } from '../utils/responses.js';
 
 /**
  * Get all subscription packages.
@@ -10,11 +10,11 @@ export const getAllSubscriptionPackages = async (req, res) => {
     try {
         const result = await subscriptionService.getAllSubscriptionPackages();
         if (result.status === 'error') {
-            return errorResponse(res, result.statusCode || 500, result.message, result.data);
+            return errorResponse(res, result.statusCode, result.message, result.data);
         }
         return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to retrieve subscription packages', error.message);
+        return errorResponse(res, 500, result.message, error.message);
     }
 };
 
@@ -34,7 +34,7 @@ export const getSubscriptionPackageById = async (req, res) => {
 
         return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to retrieve subscription package', error.message);
+        return errorResponse(res, 500, result.message, error.message);
     }
 };
 
@@ -49,7 +49,7 @@ export const getUserSubscriptions = async (req, res) => {
         const result = await subscriptionService.getUserSubscriptions(userId);
 
         if (result.status === 'error') {
-            return errorResponse(res, 500, result.message, result.data);
+            return errorResponse(res, result.statusCode, result.message, result.data);
         }
         return successResponse(res, 200, result.message, result.data);
     } catch (error) {
@@ -68,10 +68,10 @@ export const createSubscription = async (req, res) => {
         const result = await subscriptionService.createSubscription(userId, subscriptionPackageId, startDate);
 
         if (result.status === 'error') {
-            return errorResponse(res, result.statusCode || 500, result.message, result.data);
+            return errorResponse(res, result.statusCode, result.message, result.data);
         }
 
-        return successResponse(res, 201, result.message, result.data);
+        return createdResponse(res, result.data, result.message);
     } catch (error) {
         return errorResponse(res, 500, 'Failed to create subscription', error.message);
     }
