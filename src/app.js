@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { logErrors, logRequests } from './middleware/logger.js';
+import cors from 'cors';  
 
 dotenv.config();
 
 const app = express();
-
+app.use(cors({ origin: 'http://localhost:3000' }));  // 👈 ADD THIS
 // Middleware
 app.use(express.json());
 app.use(logRequests);

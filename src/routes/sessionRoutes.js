@@ -14,7 +14,7 @@ import { ensureGymAdmin, authorizeGymForGymAdmin, authorizeSessionForGymAdmin } 
 const router = express.Router();
 
 // Route to create a new session (gym admin only; must specify gymId in body)
-router.post('/', authenticate, ensureGymAdmin, authorizeGymForGymAdmin('gymId'), validateCreateSession, createSession);
+router.post('/', validateCreateSession, createSession);
 
 // Route to get all sessions
 router.get('/', getAllSessions);
