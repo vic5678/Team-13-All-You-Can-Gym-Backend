@@ -1,4 +1,5 @@
 import Session from '../models/session.js';
+import Gym from '../models/gym.js';
 
 /**
  * Service to handle session-related business logic.
@@ -11,8 +12,21 @@ class SessionService {
      */
     async createSession(sessionData) {
         try {
+            // Ensure gym exists
+            const gym = await Gym.findById(sessionData.gymId);
+            if (!gym) throw new Error('Gym not found for provided gymId');
+
             const session = new Session(sessionData);
-            return await session.save();
+            const saved = await session.save();
+
+            // Associate the session with that gym
+            try {
+                await Gym.findByIdAndUpdate(sessionData.gymId, { $addToSet: { sessions: saved._id } });
+            } catch (err) {
+                // ignore failure to associate here; caller can handle consistency
+            }
+
+            return saved;
         } catch (error) {
             throw new Error('Error creating session: ' + error.message);
         }
@@ -51,6 +65,28 @@ class SessionService {
      */
     async updateSession(sessionId, updateData) {
         try {
+            const existing = await Session.findById(sessionId);
+            if (!existing) throw new Error('Session not found');
+
+            // If gym association changes, update gyms' sessions arrays
+            if (updateData.gymId && updateData.gymId.toString() !== (existing.gymId || '').toString()) {
+                // ensure new gym exists
+                const newGym = await Gym.findById(updateData.gymId);
+                if (!newGym) throw new Error('New gym not found');
+
+                // remove from old gym
+                if (existing.gymId) {
+                    try {
+                        await Gym.findByIdAndUpdate(existing.gymId, { $pull: { sessions: existing._id } });
+                    } catch (e) { /* ignore */ }
+                }
+
+                // add to new gym
+                try {
+                    await Gym.findByIdAndUpdate(updateData.gymId, { $addToSet: { sessions: existing._id } });
+                } catch (e) { /* ignore */ }
+            }
+
             return await Session.findByIdAndUpdate(sessionId, updateData, { new: true });
         } catch (error) {
             throw new Error('Error updating session: ' + error.message);
@@ -64,7 +100,16 @@ class SessionService {
      */
     async deleteSession(sessionId) {
         try {
-            return await Session.findByIdAndDelete(sessionId);
+            const existing = await Session.findById(sessionId);
+            if (!existing) return null;
+            await Session.findByIdAndDelete(sessionId);
+            // remove reference from gym
+            if (existing.gymId) {
+                try {
+                    await Gym.findByIdAndUpdate(existing.gymId, { $pull: { sessions: existing._id } });
+                } catch (err) { /* ignore */ }
+            }
+            return existing;
         } catch (error) {
             throw new Error('Error deleting session: ' + error.message);
         }

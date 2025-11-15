@@ -5,6 +5,11 @@ const sessionSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    gymId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Gym',
+        required: true,
+    },
     dateTime: {
         type: Date,
         required: true,

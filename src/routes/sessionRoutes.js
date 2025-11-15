@@ -8,11 +8,13 @@ import {
   searchSessions
 } from '../controllers/sessionController.js';
 import { validateCreateSession } from '../middleware/validation.js';
+import { authenticate } from '../middleware/auth.js';
+import { ensureGymAdmin, authorizeGymForGymAdmin, authorizeSessionForGymAdmin } from '../middleware/gymAdminAuth.js';
 
 const router = express.Router();
 
-// Route to create a new session
-router.post('/', validateCreateSession, createSession);
+// Route to create a new session (gym admin only; must specify gymId in body)
+router.post('/', authenticate, ensureGymAdmin, authorizeGymForGymAdmin('gymId'), validateCreateSession, createSession);
 
 // Route to get all sessions
 router.get('/', getAllSessions);
@@ -23,11 +25,11 @@ router.get('/search', searchSessions);
 // Route to get a session by ID
 router.get('/:sessionId([0-9a-fA-F]{24})', getSessionById);
 
-// Route to update a session
-router.put('/:sessionId([0-9a-fA-F]{24})', updateSession);
+// Route to update a session (gym admin only)
+router.put('/:sessionId([0-9a-fA-F]{24})', authenticate, ensureGymAdmin, authorizeSessionForGymAdmin(), updateSession);
 
-// Route to delete a session
-router.delete('/:sessionId', deleteSession);
+// Route to delete a session (gym admin only)
+router.delete('/:sessionId', authenticate, ensureGymAdmin, authorizeSessionForGymAdmin(), deleteSession);
 
 
 export default router;
