@@ -1,6 +1,4 @@
-import Subscription from '../models/subscription.js';
-import User from '../models/user.js';
-import SubscriptionPackage from '../models/subscriptionPackage.js';
+import * as subscriptionService from '../services/subscriptionService.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 
 /**
@@ -10,10 +8,13 @@ import { successResponse, errorResponse } from '../utils/responses.js';
  */
 export const getAllSubscriptionPackages = async (req, res) => {
     try {
-        const packages = await SubscriptionPackage.find();
-        return successResponse(res, 200, 'All subscription packages retrieved successfully', packages);
+        const result = await subscriptionService.getAllSubscriptionPackages();
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode || 500, result.message, result.data);
+        }
+        return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to retrieve subscription packages', error);
+        return errorResponse(res, 500, 'Failed to retrieve subscription packages', error.message);
     }
 };
 
@@ -25,15 +26,15 @@ export const getAllSubscriptionPackages = async (req, res) => {
 export const getSubscriptionPackageById = async (req, res) => {
     try {
         const { id } = req.params;
-        const pkg = await SubscriptionPackage.findOne({ id: id });
+        const result = await subscriptionService.getSubscriptionPackageById(id);
 
-        if (!pkg) {
-            return errorResponse(res, 404, 'Subscription package not found');
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
         }
 
-        return successResponse(res, 200, 'Subscription package retrieved successfully', pkg);
+        return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to retrieve subscription package', error);
+        return errorResponse(res, 500, 'Failed to retrieve subscription package', error.message);
     }
 };
 
@@ -45,11 +46,14 @@ export const getSubscriptionPackageById = async (req, res) => {
 export const getUserSubscriptions = async (req, res) => {
     try {
         const { userId } = req.params;
-        const subscriptions = await Subscription.find({ userId });
+        const result = await subscriptionService.getUserSubscriptions(userId);
 
-        return successResponse(res, 200, 'User subscriptions retrieved successfully', subscriptions);
+        if (result.status === 'error') {
+            return errorResponse(res, 500, result.message, result.data);
+        }
+        return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to retrieve subscriptions', error);
+        return errorResponse(res, 500, 'Failed to retrieve subscriptions', error.message);
     }
 };
 
@@ -61,29 +65,15 @@ export const getUserSubscriptions = async (req, res) => {
 export const createSubscription = async (req, res) => {
     try {
         const { userId, subscriptionPackageId, startDate } = req.body;
+        const result = await subscriptionService.createSubscription(userId, subscriptionPackageId, startDate);
 
-        const subscriptionPackage = await SubscriptionPackage.findById(subscriptionPackageId);
-        if (!subscriptionPackage) {
-            return errorResponse(res, 404, 'Subscription package not found');
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode || 500, result.message, result.data);
         }
 
-        const sDate = new Date(startDate);
-        const endDate = new Date(sDate.setDate(sDate.getDate() + subscriptionPackage.durationDays));
-
-        const newSubscription = new Subscription({
-            userId,
-            packageId: subscriptionPackageId,
-            startDate: new Date(startDate),
-            endDate,
-            isActive: true,
-        });
-
-        await newSubscription.save();
-        await User.findByIdAndUpdate(userId, { isSubscribed: true, packageID: subscriptionPackage.id });
-
-        return successResponse(res, 201, 'Subscription created successfully', newSubscription);
+        return successResponse(res, 201, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to create subscription', error);
+        return errorResponse(res, 500, 'Failed to create subscription', error.message);
     }
 };
 
@@ -97,19 +87,15 @@ export const updateSubscription = async (req, res) => {
         const { userId, subscriptionId } = req.params;
         const updatedData = req.body;
 
-        const updatedSubscription = await Subscription.findOneAndUpdate(
-            { _id: subscriptionId, userId },
-            updatedData,
-            { new: true }
-        );
+        const result = await subscriptionService.updateSubscription(userId, subscriptionId, updatedData);
 
-        if (!updatedSubscription) {
-            return errorResponse(res, 404, 'Subscription not found');
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
         }
 
-        return successResponse(res, 200, 'Subscription updated successfully', updatedSubscription);
+        return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to update subscription', error);
+        return errorResponse(res, 500, 'Failed to update subscription', error.message);
     }
 };
 
@@ -121,22 +107,14 @@ export const updateSubscription = async (req, res) => {
 export const cancelSubscription = async (req, res) => {
     try {
         const { userId, subscriptionId } = req.params;
+        const result = await subscriptionService.cancelSubscription(userId, subscriptionId);
 
-        const canceledSubscription = await Subscription.findOneAndUpdate(
-            { _id: subscriptionId, userId },
-            { isActive: false },
-            { new: true }
-        );
-
-        if (!canceledSubscription) {
-            return errorResponse(res, 404, 'Subscription not found');
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
         }
 
-        // Also update the user's main subscription status
-        await User.findByIdAndUpdate(userId, { isSubscribed: false, packageID: null });
-
-        return successResponse(res, 200, 'Subscription canceled successfully', canceledSubscription);
+        return successResponse(res, 200, result.message, result.data);
     } catch (error) {
-        return errorResponse(res, 500, 'Failed to cancel subscription', error);
+        return errorResponse(res, 500, 'Failed to cancel subscription', error.message);
     }
 };
