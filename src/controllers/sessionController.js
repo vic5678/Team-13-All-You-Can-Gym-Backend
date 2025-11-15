@@ -98,3 +98,61 @@ export const searchSessions = async (req, res) => {
         return errorResponse(res, 500, ERROR_MESSAGES.INVALID_INPUT, error);
     }
 };
+
+/**
+ * Book a user into a session.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const bookUserIntoSession = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { sessionId } = req.body;
+        const result = await sessionService.bookUserIntoSession(userId, sessionId);
+
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
+        }
+        return successResponse(res, 200, result.message, result.data);
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to book user into session', error.message);
+    }
+};
+
+/**
+ * Unbook a user from a session.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const unbookUserFromSession = async (req, res) => {
+    try {
+        const { userId, sessionId } = req.params;
+        const result = await sessionService.unbookUserFromSession(userId, sessionId);
+
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
+        }
+        return successResponse(res, 200, result.message, result.data);
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to unbook user from session', error.message);
+    }
+};
+
+/**
+ * Get all sessions a user is booked into.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const getUserBookedSessions = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await sessionService.getUserBookedSessions(userId);
+
+        if (result.status === 'error') {
+            return errorResponse(res, result.statusCode, result.message);
+        }
+        return successResponse(res, 200, result.message, result.data);
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to retrieve user booked sessions', error.message);
+    }
+};
