@@ -1,4 +1,5 @@
 import gymService from '../services/gymService.js';
+import gymAdminService from '../services/gymAdminService.js';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 
@@ -41,6 +42,14 @@ export const getGymById = async (req, res) => {
 export const createGym = async (req, res) => {
     try {
         const gym = await gymService.createGym(req.body);
+        // If the request is made by an authenticated gymAdmin, attach the gym to their account
+        try {
+            if (req.user?.id) {
+                await gymAdminService.addGymToAdmin(req.user.id, gym._id);
+            }
+        } catch (err) {
+            // ignore admin linking errors
+        }
         return successResponse(res, 201, SUCCESS_MESSAGES.GYM_CREATED, gym);
     } catch (error) {
         return errorResponse(res, 500, error.message || ERROR_MESSAGES.INVALID_INPUT, error);

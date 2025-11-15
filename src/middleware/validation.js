@@ -10,6 +10,7 @@ export const validateCreateSession = [
     body('type').notEmpty().withMessage('Session type is required.'),
     body('capacity').isInt({ gt: 0 }).withMessage('Capacity must be a positive integer.'),
     body('trainerName').notEmpty().withMessage('Trainer name is required.'),
+    body('gymId').notEmpty().withMessage('gymId is required').isMongoId().withMessage('gymId must be a valid MongoDB id'),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

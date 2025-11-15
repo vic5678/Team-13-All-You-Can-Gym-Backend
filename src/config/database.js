@@ -5,6 +5,7 @@ import Session from '../models/session.js';
 import User from '../models/user.js';
 import Gym from '../models/gym.js';
 import Announcement from '../models/announcement.js';
+import GymAdmin from '../models/gymAdmin.js';
 // import Payment from '../models/payment.js';
 // import Subscription from '../models/subscription.js';
 // import SubscriptionPackage from '../models/subscriptionPackage.js';
@@ -39,6 +40,11 @@ const mockData = {
         { name: 'Yoga Class with Jane', dateTime: '2025-11-20T10:00:00Z', description: 'A relaxing yoga session for all levels.', type: 'Yoga', capacity: 20, trainerName: 'Jane Doe' },
         { name: 'HIIT Class with John', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'HIIT', capacity: 15, trainerName: 'John Smith' }
     ]
+    ,
+    gymAdmins: [
+        { username: 'admin1', email: 'admin1@example.com', password: 'adminpass1' },
+        { username: 'admin2', email: 'admin2@example.com', password: 'adminpass2' }
+    ],
 };
 
 const connectDB = async () => {
@@ -61,14 +67,28 @@ const connectDB = async () => {
                 User.insertMany(mockData.users),
                 Gym.insertMany(mockData.gyms),
             ]);
-            // Insert sessions now, capturing inserted documents for announcements
-            const insertedSessions = await Session.insertMany(mockData.sessions);
-            // Link first example session to first gym and second to second gym
-            if (insertedGyms && insertedGyms.length >= 2 && insertedSessions && insertedSessions.length >= 2) {
-                await Promise.all([
-                    Gym.findByIdAndUpdate(insertedGyms[0]._id, { $push: { sessions: insertedSessions[0]._id } }),
-                    Gym.findByIdAndUpdate(insertedGyms[1]._id, { $push: { sessions: insertedSessions[1]._id } }),
-                ]);
+            // Create gym admins and associate each with a gym
+            const gymAdminData = mockData.gymAdmins.map((g, idx) => ({
+                username: g.username,
+                email: g.email,
+                password: g.password,
+                gyms: [insertedGyms[idx % insertedGyms.length]._id]
+            }));
+            // Hash admin passwords
+            for (let admin of gymAdminData) {
+                admin.password = await bcrypt.hash(admin.password, salt);
+            }
+            const insertedGymAdmins = await GymAdmin.insertMany(gymAdminData);
+            // Insert sessions now, associate each session with a gym
+            const sessionsToInsert = mockData.sessions.map((s, idx) => ({
+                ...s,
+                gymId: insertedGyms[idx % insertedGyms.length]._id,
+            }));
+            const insertedSessions = await Session.insertMany(sessionsToInsert);
+            // Link sessions into their respective gyms' sessions arrays
+            if (insertedGyms && insertedGyms.length >= 1 && insertedSessions && insertedSessions.length >= 1) {
+                const updates = insertedSessions.map(sess => Gym.findByIdAndUpdate(sess.gymId, { $addToSet: { sessions: sess._id } }));
+                await Promise.all(updates);
             }
             const announcements = [
                 { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
@@ -79,6 +99,9 @@ const connectDB = async () => {
             const users = await User.find({});
             console.log('User IDs created:');
             users.forEach(user => console.log(user._id));
+            const admins = await GymAdmin.find({});
+            console.log('GymAdmin IDs created:');
+            admins.forEach(a => console.log(a._id));
             return;
         }
         await mongoose.connect(process.env.MONGO_URI, {
