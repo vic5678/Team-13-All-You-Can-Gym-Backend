@@ -16,7 +16,9 @@ app.use(logRequests);
 app.use(logErrors);
 
 // Routes
+// Mount API routes under both `/api` and root for backwards compatibility
 app.use('/api', routes);
+app.use('/', routes);
 
 // Error handling middleware
 app.use(errorHandler);
