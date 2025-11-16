@@ -13,8 +13,9 @@ import SubscriptionPackage from '../models/subscriptionPackage.js';
 // Mock data for fallback
 const mockData = {
     users: [
-        { username: 'user1', email: 'user1@example.com', password: 'password123', isSubscribed: true, packageID: 'pkg_premium' },
-        { username: 'user2', email: 'user2@example.com', password: 'password456', isSubscribed: false, packageID: null }
+        { username: 'user1', email: 'user1@example.com', password: 'password123', isSubscribed: true, packageID: 'premium_monthly' },
+        { username: 'user2', email: 'user2@example.com', password: 'password456', isSubscribed: false, packageID: null },
+        { username: 'user3', email: 'user3@example.com', password: 'password789', isSubscribed: true, packageID: 'basic_monthly' }
     ],
     gyms: [
         {
@@ -41,6 +42,12 @@ const mockData = {
         { name: 'HIIT Class with John', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'HIIT', capacity: 15, trainerName: 'John Smith' }
     ]
     ,
+    subscriptionPackages: [
+        { id: 'basic_monthly', name: 'Basic Monthly', description: 'Access to the gym and up to 10 sessions per month.', price: 29.99, durationDays: 30, sessionLimit: 10 },
+        { id: 'premium_monthly', name: 'Premium Monthly', description: 'Unlimited access to the gym and up to 30 sessions per month.', price: 49.99, durationDays: 30, sessionLimit: 30 },
+        { id: 'basic_yearly', name: 'Basic Yearly', description: 'A full year of gym access with up to 120 sessions.', price: 299.99, durationDays: 365, sessionLimit: 120 },
+        { id: 'premium_yearly', name: 'Premium Yearly', description: 'The ultimate package with unlimited gym access and up to 365 sessions for the entire year.', price: 499.99, durationDays: 365, sessionLimit: 365 }
+    ],
     gymAdmins: [
         { username: 'admin1', email: 'admin1@example.com', password: 'adminpass1' },
         { username: 'admin2', email: 'admin2@example.com', password: 'adminpass2' }
@@ -90,6 +97,42 @@ const connectDB = async () => {
                 const updates = insertedSessions.map(sess => Gym.findByIdAndUpdate(sess.gymId, { $addToSet: { sessions: sess._id } }));
                 await Promise.all(updates);
             }
+
+            // Create subscriptions for users
+            const premiumPackage = insertedPackages.find(p => p.id === 'premium_monthly');
+            const basicPackage = insertedPackages.find(p => p.id === 'basic_monthly');
+            
+            // Create subscription for user1 with premium plan
+            if (premiumPackage && insertedUsers.length > 0) {
+                const user1 = insertedUsers[0];
+                const subscriptionData = {
+                    userId: user1._id,
+                    packageId: premiumPackage._id,
+                    startDate: new Date(),
+                    endDate: new Date(new Date().setDate(new Date().getDate() + premiumPackage.durationDays)),
+                    isActive: true,
+                };
+                await Subscription.create(subscriptionData);
+                // Update user's subscription status
+                await User.findByIdAndUpdate(user1._id, { isSubscribed: true, packageID: premiumPackage.id });
+            }
+            
+            // Create subscription for user3 with basic plan
+            if (basicPackage && insertedUsers.length > 2) {
+                const user3 = insertedUsers[2];
+                const subscriptionData = {
+                    userId: user3._id,
+                    packageId: basicPackage._id,
+                    startDate: new Date(),
+                    endDate: new Date(new Date().setDate(new Date().getDate() + basicPackage.durationDays)),
+                    isActive: true,
+                };
+                await Subscription.create(subscriptionData);
+                // Update user's subscription status
+                await User.findByIdAndUpdate(user3._id, { isSubscribed: true, packageID: basicPackage.id });
+            }
+
+
             const announcements = [
                 { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
                 { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
