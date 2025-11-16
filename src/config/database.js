@@ -6,7 +6,7 @@ import User from '../models/user.js';
 import Gym from '../models/gym.js';
 import Announcement from '../models/announcement.js';
 import GymAdmin from '../models/gymAdmin.js';
-// import Payment from '../models/payment.js';
+import Payment from '../models/payment.js';
 import Subscription from '../models/subscription.js';
 import SubscriptionPackage from '../models/subscriptionPackage.js';
 
@@ -41,12 +41,6 @@ const mockData = {
         { name: 'HIIT Class with John', dateTime: '2025-11-21T11:00:00Z', description: 'High-Intensity Interval Training for maximum calorie burn.', type: 'HIIT', capacity: 15, trainerName: 'John Smith' }
     ]
     ,
-    subscriptionPackages: [
-        { id: 'basic_monthly', name: 'Basic Monthly', description: 'Access to the gym and up to 10 sessions per month.', price: 29.99, durationDays: 30, sessionLimit: 10 },
-        { id: 'premium_monthly', name: 'Premium Monthly', description: 'Unlimited access to the gym and up to 30 sessions per month.', price: 49.99, durationDays: 30, sessionLimit: 30 },
-        { id: 'basic_yearly', name: 'Basic Yearly', description: 'A full year of gym access with up to 120 sessions.', price: 299.99, durationDays: 365, sessionLimit: 120 },
-        { id: 'premium_yearly', name: 'Premium Yearly', description: 'The ultimate package with unlimited gym access and up to 365 sessions for the entire year.', price: 499.99, durationDays: 365, sessionLimit: 365 }
-    ],
     gymAdmins: [
         { username: 'admin1', email: 'admin1@example.com', password: 'adminpass1' },
         { username: 'admin2', email: 'admin2@example.com', password: 'adminpass2' }
@@ -69,10 +63,9 @@ const connectDB = async () => {
             for (let user of mockData.users) {
                 user.password = await bcrypt.hash(user.password, salt);
             }
-            const [insertedUsers, insertedGyms, insertedPackages] = await Promise.all([
+            const [insertedUsers, insertedGyms] = await Promise.all([
                 User.insertMany(mockData.users),
                 Gym.insertMany(mockData.gyms),
-                SubscriptionPackage.insertMany(mockData.subscriptionPackages),
             ]);
             // Create gym admins and associate each with a gym
             const gymAdminData = mockData.gymAdmins.map((g, idx) => ({
@@ -97,28 +90,20 @@ const connectDB = async () => {
                 const updates = insertedSessions.map(sess => Gym.findByIdAndUpdate(sess.gymId, { $addToSet: { sessions: sess._id } }));
                 await Promise.all(updates);
             }
-
-            // Create subscriptions for users
-            const premiumPackage = insertedPackages.find(p => p.id === 'premium_monthly');
-            if (premiumPackage && insertedUsers.length > 0) {
-                const user1 = insertedUsers[0];
-                const subscriptionData = {
-                    userId: user1._id,
-                    packageId: premiumPackage._id,
-                    startDate: new Date(),
-                    endDate: new Date(new Date().setDate(new Date().getDate() + premiumPackage.durationDays)),
-                    isActive: true,
-                };
-                await Subscription.create(subscriptionData);
-                // Update user's subscription status
-                await User.findByIdAndUpdate(user1._id, { isSubscribed: true, packageID: premiumPackage.id });
-            }
-
             const announcements = [
                 { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
                 { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
             ];
             await Announcement.insertMany(announcements);
+
+            // Create a mock payment for user1
+            const mockPayment = {
+                transactionId: 'txn_1001',
+                status: 'success',
+                amount: 29.99,
+                userId: insertedUsers[0]._id,
+            };
+            await Payment.create(mockPayment);
             console.log('In-memory database populated with mock data.');
             const users = await User.find({});
             console.log('User IDs created:');
