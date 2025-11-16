@@ -70,9 +70,10 @@ const connectDB = async () => {
             for (let user of mockData.users) {
                 user.password = await bcrypt.hash(user.password, salt);
             }
-            const [insertedUsers, insertedGyms] = await Promise.all([
+            const [insertedUsers, insertedGyms, insertedPackages] = await Promise.all([
                 User.insertMany(mockData.users),
                 Gym.insertMany(mockData.gyms),
+                SubscriptionPackage.insertMany(mockData.subscriptionPackages),
             ]);
             // Create gym admins and associate each with a gym
             const gymAdminData = mockData.gymAdmins.map((g, idx) => ({
@@ -132,21 +133,11 @@ const connectDB = async () => {
                 await User.findByIdAndUpdate(user3._id, { isSubscribed: true, packageID: basicPackage.id });
             }
 
-
             const announcements = [
                 { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
                 { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
             ];
             await Announcement.insertMany(announcements);
-
-            // Create a mock payment for user1
-            const mockPayment = {
-                transactionId: 'txn_1001',
-                status: 'success',
-                amount: 29.99,
-                userId: insertedUsers[0]._id,
-            };
-            await Payment.create(mockPayment);
             console.log('In-memory database populated with mock data.');
             const users = await User.find({});
             console.log('User IDs created:');

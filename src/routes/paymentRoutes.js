@@ -1,5 +1,5 @@
 import express from 'express';
-import { processPayment, getPaymentHistory } from '../controllers/paymentController.js';
+import { processPayment } from '../controllers/paymentController.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -43,29 +43,6 @@ const router = express.Router();
  *         description: Bad request
  */
 router.post('/checkout', authenticate, processPayment);
-
-/**
- * @swagger
- * /users/{userId}/payments:
- *   get:
- *     summary: Retrieve payment history for a user
- *     tags: [Users, Payment]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: true
- *         description: The user ID
- *     responses:
- *       200:
- *         description: A list of payment transactions
- *       404:
- *         description: User not found
- */
-router.get('/users/:userId/payments', authenticate, getPaymentHistory);
 
 
 export default router;
