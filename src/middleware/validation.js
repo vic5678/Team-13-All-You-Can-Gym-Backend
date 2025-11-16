@@ -12,6 +12,7 @@ export const validateCreateSession = [
     body('trainerName').notEmpty().withMessage('Trainer name is required.'),
     body('gymId').notEmpty().withMessage('gymId is required').isMongoId().withMessage('gymId must be a valid MongoDB id'),
     (req, res, next) => {
+        console.log("validateCreateSession BODY:", req.body);
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ success: false, errors: errors.array() });
