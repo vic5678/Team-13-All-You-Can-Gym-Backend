@@ -4,9 +4,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from "../models/user.js";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
+import dotenv from 'dotenv';
 
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-user-secret";
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 /**
  * @description Register a new user
