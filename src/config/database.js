@@ -6,7 +6,7 @@ import User from '../models/user.js';
 import Gym from '../models/gym.js';
 import Announcement from '../models/announcement.js';
 import GymAdmin from '../models/gymAdmin.js';
-// import Payment from '../models/payment.js';
+import Payment from '../models/payment.js';
 import Subscription from '../models/subscription.js';
 import SubscriptionPackage from '../models/subscriptionPackage.js';
 
