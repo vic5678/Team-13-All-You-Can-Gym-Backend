@@ -2,8 +2,12 @@ import * as userService from '../services/userService.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import User from "../models/user.js";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
 
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-user-secret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 /**
  * @description Register a new user
  * @param {Object} req - Express request object
@@ -49,33 +53,60 @@ export const registerUser = async (req, res) => {
  * @param {Object} res - Express response object
  */
 export const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // Check for user by email
-        console.log(email)
-        const user = await userService.findUserByEmail(email);
-        console.log(user);
-        // Check if user exists and password is correct
-        if (user && (await bcrypt.compare(password, user.password))) {
-            // Create token
-            const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-                expiresIn: '30d',
-            });
-
-            return successResponse(res, 200, 'User logged in successfully', {
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role,
-                token
-            });
-        } else {
-            return errorResponse(res, 401, 'Invalid email or password');
-        }
-    } catch (error) {
-        return errorResponse(res, 500, 'Server error during login', error.message);
+  try {
+    // Frontend sends "username" even if it's an email -> treat as identifier
+    const { email, password } = req.body; // our axios sends { email, password }
+    if (!email || !password) {
+      return errorResponse(res, 400, "Email/username and password are required");
     }
+
+    const identifier = email; // could be "user1" or "user1@example.com"
+
+    // Look up by either email OR username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
+
+    if (!user) {
+      return errorResponse(res, 401, "Invalid email/username or password");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return errorResponse(res, 401, "Invalid email/username or password");
+    }
+
+    console.log("JWT_SECRET used for user login:", JWT_SECRET);
+
+    const token = jwt.sign(
+      { id: user._id, role: "user" },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    const payload = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: "user",
+      token,
+    };
+
+    return successResponse(
+      res,
+      200,
+      SUCCESS_MESSAGES.LOGIN_SUCCESS || "User logged in successfully",
+      payload
+    );
+  } catch (err) {
+    console.error("User login error:", err);
+    return errorResponse(
+      res,
+      500,
+      "Server error during login",
+      err
+    );
+  }
 };
 
 /**
