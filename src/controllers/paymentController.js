@@ -1,4 +1,5 @@
 import * as PaymentService from '../services/paymentService.js';
+import SubscriptionPackage from '../models/subscriptionPackage.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
 
@@ -9,13 +10,39 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
  */
 export const processPayment = async (req, res) => {
     try {
-        const paymentData = req.body || {};
-        // Prefer server-side authenticated user id over client provided userId
-        if (req.user && req.user.id) paymentData.userId = req.user.id;
+        const { packageId } = req.params;  // This is the string id like "basic_monthly"
+        const { cardNumber, expiryDate, cvv } = req.body;
+
+        // Validate that packageId is provided
+        if (!packageId) {
+            return errorResponse(res, 400, 'Package ID is required', null);
+        }
+
+        // Find the subscription package by the string id field (not MongoDB _id)
+        const subscriptionPackage = await SubscriptionPackage.findOne({ id: packageId });
+        
+        if (!subscriptionPackage) {
+            return errorResponse(
+                res, 
+                404, 
+                'Subscription package not found', 
+                null
+            );
+        }
+
+        // Build payment data with server-side values
+        const paymentData = {
+            cardNumber,
+            expiryDate,
+            cvv,
+            amount: subscriptionPackage.price,  // Automatically set from package
+            packageId: subscriptionPackage._id,  // Use MongoDB ObjectId for database operations
+            userId: req.user.id,  // Get from authenticated user
+        };
+
         const paymentResult = await PaymentService.processPayment(paymentData);
         
         if (paymentResult.success) {
-            // include subscription info if available
             return successResponse(res, 200, SUCCESS_MESSAGES.PAYMENT_PROCESSED, paymentResult.data);
         } else {
             return errorResponse(res, 400, ERROR_MESSAGES.PAYMENT_FAILED, paymentResult.error);
@@ -24,4 +51,3 @@ export const processPayment = async (req, res) => {
         return errorResponse(res, 500, error.message || ERROR_MESSAGES.INVALID_INPUT, error);
     }
 };
-// payment history feature removed
