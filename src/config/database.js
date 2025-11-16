@@ -13,8 +13,9 @@ import SubscriptionPackage from '../models/subscriptionPackage.js';
 // Mock data for fallback
 const mockData = {
     users: [
-        { username: 'user1', email: 'user1@example.com', password: 'password123', isSubscribed: true, packageID: 'pkg_premium' },
-        { username: 'user2', email: 'user2@example.com', password: 'password456', isSubscribed: false, packageID: null }
+        { username: 'user1', email: 'user1@example.com', password: 'password123', isSubscribed: true, packageID: 'premium_monthly' },
+        { username: 'user2', email: 'user2@example.com', password: 'password456', isSubscribed: false, packageID: null },
+        { username: 'user3', email: 'user3@example.com', password: 'password789', isSubscribed: true, packageID: 'basic_monthly' }
     ],
     gyms: [
         {
@@ -100,6 +101,9 @@ const connectDB = async () => {
 
             // Create subscriptions for users
             const premiumPackage = insertedPackages.find(p => p.id === 'premium_monthly');
+            const basicPackage = insertedPackages.find(p => p.id === 'basic_monthly');
+            
+            // Create subscription for user1 with premium plan
             if (premiumPackage && insertedUsers.length > 0) {
                 const user1 = insertedUsers[0];
                 const subscriptionData = {
@@ -112,6 +116,21 @@ const connectDB = async () => {
                 await Subscription.create(subscriptionData);
                 // Update user's subscription status
                 await User.findByIdAndUpdate(user1._id, { isSubscribed: true, packageID: premiumPackage.id });
+            }
+            
+            // Create subscription for user3 with basic plan
+            if (basicPackage && insertedUsers.length > 2) {
+                const user3 = insertedUsers[2];
+                const subscriptionData = {
+                    userId: user3._id,
+                    packageId: basicPackage._id,
+                    startDate: new Date(),
+                    endDate: new Date(new Date().setDate(new Date().getDate() + basicPackage.durationDays)),
+                    isActive: true,
+                };
+                await Subscription.create(subscriptionData);
+                // Update user's subscription status
+                await User.findByIdAndUpdate(user3._id, { isSubscribed: true, packageID: basicPackage.id });
             }
 
             const announcements = [
