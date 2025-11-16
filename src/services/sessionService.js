@@ -1,5 +1,7 @@
 import Session from '../models/session.js';
 import Gym from '../models/gym.js';
+import User from '../models/user.js';
+import { successResponse, errorResponse } from '../utils/responses.js';
 
 /**
  * Service to handle session-related business logic.
@@ -135,6 +137,76 @@ class SessionService {
         } catch (error) {
             throw new Error('Error searching sessions: ' + error.message);
         }
+    }
+
+    /**
+     * Books a user into a session.
+     * @param {string} userId - The ID of the user.
+     * @param {string} sessionId - The ID of the session.
+     * @returns {Promise<Object>} - The updated session.
+     */
+    async bookUserIntoSession(userId, sessionId) {
+        const session = await Session.findById(sessionId);
+        if (!session) {
+            return errorResponse('Session not found', null, 404);
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return errorResponse('User not found', null, 404);
+        }
+
+        if (session.participants.length >= session.capacity) {
+            return errorResponse('Session is full', null, 400);
+        }
+
+        if (session.participants.includes(userId)) {
+            return errorResponse('User already booked in this session', null, 400);
+        }
+
+        session.participants.push(userId);
+        user.bookedSessions.push(sessionId);
+
+        await session.save();
+        await user.save();
+
+        return successResponse(session, 'User successfully booked into session.');
+    }
+
+    /**
+     * Unbooks a user from a session.
+     * @param {string} userId - The ID of the user.
+     * @param {string} sessionId - The ID of the session.
+     * @returns {Promise<Object>} - Confirmation of unbooking.
+     */
+    async unbookUserFromSession(userId, sessionId) {
+        const session = await Session.findById(sessionId);
+        if (!session) {
+            return errorResponse('Session not found', null, 404);
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return errorResponse('User not found', null, 404);
+        }
+
+        await Session.updateOne({ _id: sessionId }, { $pull: { participants: userId } });
+        await User.updateOne({ _id: userId }, { $pull: { bookedSessions: sessionId } });
+
+        return successResponse(null, 'User successfully unbooked from session.');
+    }
+
+    /**
+     * Gets all sessions a user is booked into.
+     * @param {string} userId - The ID of the user.
+     * @returns {Promise<Object>} - List of booked sessions.
+     */
+    async getUserBookedSessions(userId) {
+        const user = await User.findById(userId).populate('bookedSessions');
+        if (!user) {
+            return errorResponse('User not found', null, 404);
+        }
+        return successResponse(user.bookedSessions, 'Successfully retrieved user booked sessions.');
     }
 }
 
