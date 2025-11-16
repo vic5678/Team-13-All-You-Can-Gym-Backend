@@ -84,7 +84,7 @@ export const deleteGym = async (req, res) => {
         if (!gym) {
             return errorResponse(res, 404, ERROR_MESSAGES.GYM_NOT_FOUND);
         }
-        return successResponse(res, 204, SUCCESS_MESSAGES.GYM_DELETED);
+        return successResponse(res, 200, SUCCESS_MESSAGES.GYM_DELETED);
     } catch (error) {
         return errorResponse(res, 500, error.message || ERROR_MESSAGES.INVALID_INPUT, error);
     }
