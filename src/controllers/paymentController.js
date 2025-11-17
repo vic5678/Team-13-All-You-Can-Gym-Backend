@@ -10,7 +10,7 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
  */
 export const processPayment = async (req, res) => {
     try {
-        const { packageId } = req.params;  // This is the string id like "basic_monthly"
+        const { packageId } = req.params;
         const { cardNumber, expiryDate, cvv } = req.body;
 
         // Validate that packageId is provided
@@ -19,7 +19,7 @@ export const processPayment = async (req, res) => {
         }
 
         // Find the subscription package by the string id field (not MongoDB _id)
-        const subscriptionPackage = await SubscriptionPackage.findOne({ id: packageId });
+        const subscriptionPackage = await SubscriptionPackage.findById(packageId);
         
         if (!subscriptionPackage) {
             return errorResponse(
