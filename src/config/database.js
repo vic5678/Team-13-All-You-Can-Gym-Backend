@@ -35,6 +35,42 @@ const mockData = {
             rating: 4.2,
             sessions: [],
             keywords: ['HIIT', 'Cardio', 'Yoga']
+        },
+        {
+            name: 'Iron Paradise Gym',
+            location: '789 Oak Ave, Central City',
+            latitude: 34.0522,
+            longitude: -118.2437,
+            rating: 4.8,
+            sessions: [],
+            keywords: ['Bodybuilding', 'Powerlifting', 'CrossFit', 'Strength']
+        },
+        {
+            name: 'Zen Fitness Center',
+            location: '321 Pine St, Riverside',
+            latitude: 33.9533,
+            longitude: -117.3962,
+            rating: 4.6,
+            sessions: [],
+            keywords: ['Yoga', 'Pilates', 'Meditation', 'Wellness']
+        },
+        {
+            name: 'Peak Performance Athletics',
+            location: '555 Maple Dr, Springfield',
+            latitude: 39.7817,
+            longitude: -89.6501,
+            rating: 4.7,
+            sessions: [],
+            keywords: ['CrossFit', 'HIIT', 'Cardio']
+        },
+        {
+            name: 'FlexZone 24/7',
+            location: '999 Cedar Blvd, Harbor City',
+            latitude: 41.8781,
+            longitude: -87.6298,
+            rating: 4.3,
+            sessions: [],
+            keywords: ['24/7', 'Cardio', 'Weights', 'Cycling']
         }
     ],
     sessions: [
