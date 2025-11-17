@@ -8,7 +8,7 @@ import { successResponse, errorResponse, createdResponse } from '../utils/respon
  * @param {Object} res - Express response object
  */
 export const createSession = async (req, res) => {
-    console.log("createSession BODY (after validation):", req.body); // 👈 ADD THIS
+    console.log("createSession BODY (after validation):", req.body);
     try {
         const newSession = await sessionService.createSession(req.body);
         return createdResponse(res, newSession, SUCCESS_MESSAGES.SESSION_CREATED);

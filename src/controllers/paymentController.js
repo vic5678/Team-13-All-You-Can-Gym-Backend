@@ -1,5 +1,5 @@
 import * as PaymentService from '../services/paymentService.js';
-import SubscriptionPackage from '../models/subscriptionPackage.js';
+import * as subscriptionService from '../services/subscriptionService.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
 
@@ -19,7 +19,7 @@ export const processPayment = async (req, res) => {
         }
 
         // Find the subscription package by the string id field (not MongoDB _id)
-        const subscriptionPackage = await SubscriptionPackage.findById(packageId);
+        const subscriptionPackage = await subscriptionService.getSubscriptionPackageById(packageId);
         
         if (!subscriptionPackage) {
             return errorResponse(

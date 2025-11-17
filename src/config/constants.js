@@ -6,6 +6,8 @@ export const ERROR_MESSAGES = {
   GYM_NOT_FOUND: "Gym not found.",
   ANNOUNCEMENT_NOT_FOUND: "Announcement not found.",
   PAYMENT_FAILED: "Payment processing failed.",
+  SUBSCRIPTION_PACKAGE_NOT_FOUND: "Subscription package not found.",
+  SUBSCRIPTION_PACKAGES_NOT_FOUND: "Subscription packages not found."
 };
 
 export const SUCCESS_MESSAGES = {
@@ -26,7 +28,11 @@ export const SUCCESS_MESSAGES = {
   GYMS_FILTERED: "Filtered gyms retrieved successfully",
   GYMS_SEARCHED: "Gyms searched successfully",
   PAYMENT_PROCESSED: "Payment processed successfully.",
-  PAYMENT_HISTORY_RETRIEVED: "Payment history retrieved successfully."
+  PAYMENT_HISTORY_RETRIEVED: "Payment history retrieved successfully.",
+  SUBSCRIPTION_PACKAGES_RETRIEVED: "Subscription packages retrieved successfully.",
+  SUBSCRIPTION_PACKAGE_RETRIEVED: "Subscription package retrieved successfully.",
+  SUBSCRIPTION_RETRIEVED: "Subscription retrieved successfully.",
+  SUBSCRIPTION_PURCHASED: "Subscription purchased successfully."
 };
 
 export const DEFAULTS = {
