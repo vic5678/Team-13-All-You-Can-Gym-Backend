@@ -79,7 +79,7 @@ export const deleteSession = async (req, res) => {
         if (!deletedSession) {
             return errorResponse(res, 404, ERROR_MESSAGES.SESSION_NOT_FOUND);
         }
-        return res.status(204).send();
+        return successResponse(res, 200, SUCCESS_MESSAGES.SESSION_DELETED);
     } catch (error) {
         return errorResponse(res, 500, ERROR_MESSAGES.INVALID_INPUT, error);
     }
