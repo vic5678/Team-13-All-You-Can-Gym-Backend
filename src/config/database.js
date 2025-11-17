@@ -112,12 +112,20 @@ const connectDB = async () => {
                 SubscriptionPackage.insertMany(mockData.subscriptionPackages),
             ]);
             // Create gym admins and associate each with a gym
-            const gymAdminData = mockData.gymAdmins.map((g, idx) => ({
-                username: g.username,
-                email: g.email,
-                password: g.password,
-                gyms: [insertedGyms[idx % insertedGyms.length]._id]
-            }));
+            const gymAdminData = [
+                {
+                    username: mockData.gymAdmins[0].username,
+                    email: mockData.gymAdmins[0].email,
+                    password: mockData.gymAdmins[0].password,
+                    gyms: [insertedGyms[0]._id, insertedGyms[1]._id, insertedGyms[2]._id]
+                },
+                {
+                    username: mockData.gymAdmins[1].username,
+                    email: mockData.gymAdmins[1].email,
+                    password: mockData.gymAdmins[1].password,
+                    gyms: [insertedGyms[4]._id]
+                }
+            ];
             // Hash admin passwords
             for (let admin of gymAdminData) {
                 admin.password = await bcrypt.hash(admin.password, salt);
