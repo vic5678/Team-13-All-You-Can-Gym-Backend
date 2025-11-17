@@ -59,41 +59,7 @@ export const loginUser = async (req, res) => {
   try {
     // Frontend sends "username" even if it's an email -> treat as identifier
     const { email, password } = req.body; // our axios sends { email, password }
-    if (!email || !password) {
-      return errorResponse(res, 400, "Email/username and password are required");
-    }
-
-    const identifier = email; // could be "user1" or "user1@example.com"
-
-    // Look up by either email OR username
-    const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }],
-    });
-
-    if (!user) {
-      return errorResponse(res, 401, "Invalid email/username or password");
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return errorResponse(res, 401, "Invalid email/username or password");
-    }
-
-    console.log("JWT_SECRET used for user login:", JWT_SECRET);
-
-    const token = jwt.sign(
-      { id: user._id, role: "user" },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-
-    const payload = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      role: "user",
-      token,
-    };
+    const payload = await userService.loginUser(email, password);
 
     return successResponse(
       res,

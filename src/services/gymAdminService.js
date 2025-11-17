@@ -1,7 +1,14 @@
 import GymAdmin from '../models/gymAdmin.js';
 import Gym from '../models/gym.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import { ERROR_MESSAGES } from '../config/constants.js';
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 
 class GymAdminService {
     async createAdmin(adminData) {
@@ -81,6 +88,53 @@ class GymAdminService {
             return await this.ownsSession(adminId, sessionId);
         } catch (error) {
             return false;
+        }
+    }
+
+    async loginAdmin(email, password) {
+        try {
+            // Validate input
+            if (!email || !password) {
+                throw new Error("Email/username and password are required");
+            }
+
+            const identifier = email; // could be "admin1" or "admin1@example.com"
+
+            // Find admin by email or username
+            const admin = await GymAdmin.findOne({
+                $or: [{ email: identifier }, { username: identifier }],
+            });
+
+            if (!admin) {
+                throw new Error("Invalid email or password");
+            }
+
+            // Verify password
+            const match = await bcrypt.compare(password, admin.password);
+            if (!match) {
+                throw new Error("Invalid email or password");
+            }
+
+            // Log JWT secret for debugging
+            console.log("JWT_SECRET used for gymAdmin login:", JWT_SECRET);
+
+            // Generate JWT token
+            const token = jwt.sign(
+                { id: admin._id, role: "gymAdmin" },
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRES_IN }
+            );
+
+            // Return admin data with token
+            return {
+                _id: admin._id,
+                username: admin.username,
+                email: admin.email,
+                gyms: admin.gyms,
+                token,
+            };
+        } catch (error) {
+            throw error;
         }
     }
 }
