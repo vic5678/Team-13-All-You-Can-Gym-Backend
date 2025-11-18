@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+    title: 'All You Can Gym API'
+    description: 'Backend API for the All You Can Gym web application - Software Engineering II (AUTh)'
+    version: 1.0.0
+    contact:
+        name: 'Team 13'
+servers:
+    -
+        url: 'http://localhost:3000/api'
+        description: 'Local development server'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: 'JWT token obtained from login endpoints. Include as "Bearer {token}" in Authorization header.'
+    schemas:
+        User:
+            type: object
+            properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, username: {type: string, example: user1}, email: {type: string, format: email, example: user1@example.com}, password: {type: string, example: password123}, isSubscribed: {type: boolean, example: 'true'}, packageID: {type: string, example: 507f1f77bcf86cd799439011}, friends: {type: array, items: {$ref: '#/components/schemas/User'}}}
+        LoginResponse:
+            type: object
+            properties: {success: {type: boolean, example: true}, message: {type: string, example: 'User logged in successfully'}, data: {type: object, properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, username: {type: string, example: john_doe}, email: {type: string, example: john@example.com}, role: {type: string, example: user}, token: {type: string, example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...}}}}
+        SubscriptionPackage:
+            type: object
+            properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, id: {type: string, example: basic_monthly}, name: {type: string, example: 'Basic Monthly'}, description: {type: string, example: 'Access to the gym and up to 10 sessions per month.'}, price: {type: number, example: 29.99}, durationDays: {type: number, example: 30}, sessionLimit: {type: number, example: 10}}
+        Subscription:
+            type: object
+            properties: {_id: {type: string}, userId: {type: string}, packageId: {type: string}, startDate: {type: string, format: date-time}, endDate: {type: string, format: date-time}, isActive: {type: boolean, example: true}}
+        Gym:
+            type: object
+            properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, name: {type: string, example: 'Downtown Fitness Center'}, rating: {type: number, example: 4.5}, sessions: {type: array, items: {$ref: '#/components/schemas/Session/properties/_id'}}, keywords: {type: array, items: {type: string, example: [Powerlifting, Yoga, Strength]}}, location: {type: string, example: '123 Main St, Metropolis'}, latitude: {type: number, example: 40.7128}, longitude: {type: number, example: -74.006}}
+        Session:
+            type: object
+            properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, name: {type: string, example: 'Morning Yoga'}, gymId: {type: string, example: 507f1f77bcf86cd799439012}, dateTime: {type: string, format: date-time, example: '2025-11-18T09:00:00Z'}, description: {type: string}, type: {type: string, example: Yoga}, capacity: {type: number, example: 20}, trainerName: {type: string, example: 'Jane Smith'}}
+        Announcement:
+            type: object
+            properties: {_id: {type: string, example: 507f1f77bcf86cd799439011}, sessionId: {type: string, example: 507f1f77bcf86cd799439012}, content: {type: string, example: 'Class Cancelled: Today''s session is cancelled due to instructor illness'}}
+        SuccessResponse:
+            type: object
+            properties: {success: {type: boolean, example: true}, message: {type: string, example: 'Operation successful'}, data: {type: object}}
+        ErrorResponse:
+            type: object
+            properties: {success: {type: boolean, example: false}, message: {type: string, example: 'Error message'}, errors: {type: array, items: {type: object}}}
+paths:
+    /users/login:
+        post:
+            tags: [Authentication]
+            summary: 'User login'
+            description: 'Authenticate a regular user and receive a JWT token'
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [email, password], properties: {email: {type: string, format: email, example: user@example.com}, password: {type: string, format: password, example: securePassword123}}}}}}
+            responses: {'200': {description: 'Login successful', content: {application/json: {schema: {$ref: '#/components/schemas/LoginResponse'}}}}, '401': {description: 'Invalid credentials', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}, '500': {description: 'Server error', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
+    /gymAdmins/login:
+        post:
+            tags: [Authentication]
+            summary: 'Gym admin login'
+            description: 'Authenticate a gym administrator and receive a JWT token'
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [email, password], properties: {email: {type: string, format: email, example: admin@gym.com}, password: {type: string, format: password, example: adminPassword123}}}}}}
+            responses: {'200': {description: 'Login successful', content: {application/json: {schema: {$ref: '#/components/schemas/LoginResponse'}}}}, '401': {description: 'Invalid credentials', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}, '500': {description: 'Server error'}}
+    /users/register:
+        post:
+            tags: [Authentication]
+            summary: 'Register new user'
+            description: 'Create a new user account'
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [username, email, password], properties: {username: {type: string, example: john_doe}, email: {type: string, format: email, example: john@example.com}, password: {type: string, format: password, example: securePassword123}}}}}}
+            responses: {'201': {description: 'User registered successfully', content: {application/json: {schema: {$ref: '#/components/schemas/LoginResponse'}}}}, '400': {description: 'Invalid input or user already exists', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
+    /subscriptions:
+        get:
+            tags: ['Subscription Packages']
+            summary: 'Get all subscription packages'
+            description: 'Retrieve all available subscription packages'
+            responses: {'200': {description: 'Subscription packages retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean, example: true}, message: {type: string}, data: {type: array, items: {$ref: '#/components/schemas/SubscriptionPackage'}}}}}}}}
+    '/subscriptions/{_id}':
+        get:
+            tags: ['Subscription Packages']
+            summary: 'Get subscription package by ID'
+            description: 'Retrieve a specific subscription package by its ID'
+            parameters: [{name: _id, in: path, required: true, schema: {type: string}, example: 507f1f77bcf86cd799439011}]
+            responses: {'200': {description: 'Subscription package retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, message: {type: string}, data: {$ref: '#/components/schemas/SubscriptionPackage'}}}}}}, '404': {description: 'Subscription package not found'}}
+    '/users/{userId}/subscription':
+        get:
+            tags: ['User Subscriptions']
+            summary: 'Get user subscriptions'
+            description: 'Retrieve all subscriptions for a specific user'
+            security: [{bearerAuth: []}]
+            parameters: [{name: userId, in: path, required: true, schema: {type: string}, example: 507f1f77bcf86cd799439011}]
+            responses: {'200': {description: 'Subscriptions retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, message: {type: string}, data: {type: array, items: {$ref: '#/components/schemas/Subscription'}}}}}}}, '401': {description: 'Unauthorized - Invalid or missing token'}, '404': {description: 'User not found'}}
+        post:
+            tags: ['User Subscriptions']
+            summary: 'Create subscription for user'
+            description: 'Create a new subscription for the specified user'
+            security: [{bearerAuth: []}]
+            parameters: [{name: userId, in: path, required: true, schema: {type: string}}]
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [subscriptionPackageId, startDate], properties: {subscriptionPackageId: {type: string, example: basic_monthly}, startDate: {type: string, format: date-time, example: '2025-11-18T00:00:00Z'}}}}}}
+            responses: {'201': {description: 'Subscription created successfully', content: {application/json: {schema: {$ref: '#/components/schemas/SuccessResponse'}}}}, '400': {description: 'Invalid input'}, '401': {description: Unauthorized}}
+    '/users/{userId}/subscription/{subscriptionId}':
+        put:
+            tags: ['User Subscriptions']
+            summary: 'Update user subscription'
+            description: 'Update an existing subscription (e.g., upgrade/downgrade package)'
+            security: [{bearerAuth: []}]
+            parameters: [{name: userId, in: path, required: true, schema: {type: string}}, {name: subscriptionId, in: path, required: true, schema: {type: string}}]
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [subscriptionId], properties: {subscriptionId: {type: string, example: 691b65d45a0ffd6328264f25}}}}}}
+            responses: {'200': {description: 'Subscription updated successfully'}, '401': {description: Unauthorized}, '404': {description: 'Subscription not found'}}
+        delete:
+            tags: ['User Subscriptions']
+            summary: 'Cancel user subscription'
+            description: 'Cancel an active subscription'
+            security: [{bearerAuth: []}]
+            parameters: [{name: userId, in: path, required: true, schema: {type: string}}, {name: subscriptionId, in: path, required: true, schema: {type: string}}]
+            responses: {'200': {description: 'Subscription cancelled successfully'}, '401': {description: Unauthorized}, '404': {description: 'Subscription not found'}}
+    '/payments/checkout/{packageId}':
+        post:
+            tags: [Payments]
+            summary: 'Process payment for subscription package'
+            description: 'Process payment details and create a subscription'
+            security: [{bearerAuth: []}]
+            parameters: [{name: packageId, in: path, required: true, schema: {type: string}, example: 507f1f77bcf86cd799439011}]
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [cardNumber, expiryDate, cvv], properties: {cardNumber: {type: string, example: '4111111111111111', description: '16-digit card number'}, expiryDate: {type: string, example: 12/25, description: 'Card expiry date (MM/YY, MM/YYYY, or YYYY-MM)'}, cvv: {type: string, example: '123', description: '3 or 4 digit CVV'}}}}}}
+            responses: {'200': {description: 'Payment processed successfully', content: {application/json: {schema: {$ref: '#/components/schemas/SuccessResponse'}}}}, '400': {description: 'Invalid payment details or package not found'}, '401': {description: Unauthorized}, '404': {description: 'Package not found'}, '500': {description: 'Server error'}}
+    /gyms:
+        get:
+            tags: [Gyms]
+            summary: 'Get all gyms'
+            description: 'Retrieve all partner gyms. Can filter by gymId query parameter.'
+            parameters: [{name: gymId, in: query, required: false, schema: {type: string}, description: 'Filter sessions by specific gym ID'}]
+            responses: {'200': {description: 'Gyms retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, message: {type: string}, data: {type: array, items: {$ref: '#/components/schemas/Gym'}}}}}}}}
+    /gyms/search:
+        get:
+            tags: [Gyms]
+            summary: 'Search gyms by keyword'
+            description: 'Search for gyms using a keyword'
+            parameters: [{name: keyword, in: query, required: true, schema: {type: string}, example: downtown}]
+            responses: {'200': {description: 'Search results retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {type: array, items: {$ref: '#/components/schemas/Gym'}}}}}}}}
+    /gyms/filter:
+        get:
+            tags: [Gyms]
+            summary: 'Filter gyms by preferences'
+            description: 'Filter gyms based on various criteria (amenities, location, etc.)'
+            parameters: [{name: sessionType, in: query, schema: {type: string}, example: Yoga}, {name: latitude, in: query, schema: {type: number}}, {name: longitude, in: query, schema: {type: number}}, {name: distance, in: query, schema: {type: number}}]
+            responses: {'200': {description: 'Filtered gyms retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {type: array, items: {$ref: '#/components/schemas/Gym'}}}}}}}}
+    '/gyms/{gymId}':
+        get:
+            tags: [Gyms]
+            summary: 'Get gym by ID'
+            description: 'Retrieve a specific gym''s details'
+            parameters: [{name: gymId, in: path, required: true, schema: {type: string}, example: 507f1f77bcf86cd799439011}]
+            responses: {'200': {description: 'Gym retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {$ref: '#/components/schemas/Gym'}}}}}}, '404': {description: 'Gym not found'}}
+    /sessions:
+        get:
+            tags: [Sessions]
+            summary: 'Get all sessions'
+            description: 'Retrieve all available sessions.'
+            responses: {'200': {description: 'Sessions retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, message: {type: string}, data: {type: array, items: {$ref: '#/components/schemas/Session'}}}}}}}}
+        post:
+            tags: [Sessions]
+            summary: 'Create new session'
+            description: 'Create a new session (gym admin only)'
+            security: [{bearerAuth: []}]
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [name, gymId, dateTime, description, type, capacity, trainerName], properties: {name: {type: string, example: 'Morning Yoga'}, gymId: {type: string, example: 507f1f77bcf86cd799439011}, trainerName: {type: string, example: 'Jane Smith'}, dateTime: {type: string, format: date-time, example: '2025-11-18T09:00:00Z'}, description: {type: string}, capacity: {type: number, example: 20}}}}}}
+            responses: {'201': {description: 'Session created successfully', content: {application/json: {schema: {$ref: '#/components/schemas/SuccessResponse'}}}}, '401': {description: Unauthorized}, '403': {description: 'Forbidden - Not a gym admin'}}
+    /sessions/search:
+        get:
+            tags: [Sessions]
+            summary: 'Search sessions'
+            description: 'Search for sessions by keyword'
+            parameters: [{name: keyword, in: query, required: true, schema: {type: string}, example: yoga}]
+            responses: {'200': {description: 'Search results retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {type: array, items: {$ref: '#/components/schemas/Session'}}}}}}}}
+    '/sessions/{sessionId}':
+        get:
+            tags: [Sessions]
+            summary: 'Get session by ID'
+            description: 'Retrieve a specific session''s details'
+            parameters: [{name: sessionId, in: path, required: true, schema: {type: string}, example: 507f1f77bcf86cd799439011}]
+            responses: {'200': {description: 'Session retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {$ref: '#/components/schemas/Session'}}}}}}, '404': {description: 'Session not found'}}
+        put:
+            tags: [Sessions]
+            summary: 'Update session'
+            description: 'Update an existing session (gym admin only)'
+            security: [{bearerAuth: []}]
+            parameters: [{name: sessionId, in: path, required: true, schema: {type: string}}]
+            requestBody: {required: true, content: {application/json: {schema: {type: object, required: [name, gymId, dateTime, description, type, capacity, trainerName], properties: {name: {type: string, example: 'Morning Yoga'}, gymId: {type: string, example: 507f1f77bcf86cd799439011}, trainerName: {type: string, example: 'Jane Smith'}, dateTime: {type: string, format: date-time, example: '2025-11-18T09:00:00Z'}, description: {type: string}, capacity: {type: number, example: 20}}}}}}
+            responses: {'200': {description: 'Session updated successfully'}, '401': {description: Unauthorized}, '403': {description: Forbidden}}
+        delete:
+            tags: [Sessions]
+            summary: 'Delete session'
+            description: 'Delete a session (gym admin only)'
+            security: [{bearerAuth: []}]
+            parameters: [{name: sessionId, in: path, required: true, schema: {type: string}}]
+            responses: {'200': {description: 'Session deleted successfully'}, '401': {description: Unauthorized}, '403': {description: Forbidden}, '404': {description: 'Session not found'}}
+    /users/search:
+        get:
+            tags: [Social]
+            summary: 'Search users by username'
+            description: 'Search for users by their username'
+            security: [{bearerAuth: []}]
+            parameters: [{name: username, in: query, required: true, schema: {type: string}, example: john}]
+            responses: {'200': {description: 'Search results retrieved successfully', content: {application/json: {schema: {type: object, properties: {success: {type: boolean}, data: {type: array, items: {type: object, properties: {_id: {$ref: '#/components/schemas/User/properties/_id'}, username: {$ref: '#/components/schemas/User/properties/username'}}}}}}}}}, '401': {description: Unauthorized}}
+    '/users/{userId}':
+        get:
+            tags: [Social]
+            summary: 'Get user by ID'
+            description: "Returns user information. Response fields depend on the authenticated user:\n- **Own profile (userId matches authenticated user)**: Returns all fields from User schema\n- **Other user's profile**: Returns only _id and username\n"
+            security: [{bearerAuth: []}]
+            parameters: [{name: userId, in: path, required: true, schema: {type: string}, description: 'User ID to retrieve'}]
+            responses: {'200': {description: 'User information (context-dependent)', content: {application/json: {schema: {allOf: [{$ref: '#/components/schemas/User'}]}, examples: {ownProfile: {summary: 'Own profile (all fields)', description: 'Response when userId matches authenticated user ID'}, otherUserProfile: {summary: 'Other user''s profile (public fields only)', description: 'Response when userId is different from authenticated user ID', value: {_id: 507f1f77bcf86cd799439011, username: john_doe}}}}}}, '401': {description: 'Unauthorized - authentication required'}, '404': {description: 'User not found'}}
+tags:
+    -
+        name: Authentication
+        description: 'User and gym admin authentication endpoints'
+    -
+        name: 'Subscription Packages'
+        description: 'Available subscription plans and packages'
+    -
+        name: 'User Subscriptions'
+        description: 'User subscription management'
+    -
+        name: Payments
+        description: 'Payment processing for subscriptions'
+    -
+        name: Gyms
+        description: 'Partner gym information and search'
+    -
+        name: Sessions
+        description: 'Session management'
+    -
+        name: Social
+        description: 'User profiles, search, and friend management'
