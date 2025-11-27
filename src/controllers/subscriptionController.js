@@ -1,5 +1,6 @@
 import * as subscriptionService from '../services/subscriptionService.js';
 import { successResponse, errorResponse, createdResponse } from '../utils/responses.js';
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../config/constants.js';
 
 /**
  * Get all subscription packages.
@@ -12,9 +13,9 @@ export const getAllSubscriptionPackages = async (req, res) => {
         if (result.status === 'error') {
             return errorResponse(res, result.statusCode, result.message, result.data);
         }
-        return successResponse(res, 200, result.message, result.data);
+        return successResponse(res, 200, SUCCESS_MESSAGES.SUBSCRIPTION_PACKAGES_RETRIEVED, result.data);
     } catch (error) {
-        return errorResponse(res, 500, result.message, error.message);
+        return errorResponse(res, 500, ERROR_MESSAGES.SUBSCRIPTION_PACKAGES_NOT_FOUND, error.message);
     }
 };
 
@@ -32,9 +33,9 @@ export const getSubscriptionPackageById = async (req, res) => {
             return errorResponse(res, result.statusCode, result.message);
         }
 
-        return successResponse(res, 200, result.message, result.data);
+        return successResponse(res, 200, SUCCESS_MESSAGES.SUBSCRIPTION_PACKAGE_RETRIEVED, result);
     } catch (error) {
-        return errorResponse(res, 500, result.message, error.message);
+        return errorResponse(res, 500, ERROR_MESSAGES.SUBSCRIPTION_PACKAGE_NOT_FOUND, error.message);
     }
 };
 
@@ -51,7 +52,7 @@ export const getUserSubscriptions = async (req, res) => {
         if (result.status === 'error') {
             return errorResponse(res, result.statusCode, result.message, result.data);
         }
-        return successResponse(res, 200, result.message, result.data);
+        return successResponse(res, 200, SUCCESS_MESSAGES.SUBSCRIPTION_RETRIEVED, result.data);
     } catch (error) {
         return errorResponse(res, 500, 'Failed to retrieve subscriptions', error.message);
     }
