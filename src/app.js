@@ -9,7 +9,7 @@ import cors from 'cors';
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3001' }));  
+app.use(cors({ origin: '*' })); // Enable CORS for all origins
 // Middleware
 app.use(express.json());
 app.use(logRequests);
