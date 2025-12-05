@@ -8,7 +8,7 @@ import { successResponse, errorResponse, createdResponse } from '../utils/respon
  * @param {Object} res - Express response object
  */
 export const createSession = async (req, res) => {
-    console.log("createSession BODY (after validation):", req.body); // 👈 ADD THIS
+    console.log("createSession BODY (after validation):", req.body);
     try {
         const newSession = await sessionService.createSession(req.body);
         return createdResponse(res, newSession, SUCCESS_MESSAGES.SESSION_CREATED);
@@ -79,7 +79,7 @@ export const deleteSession = async (req, res) => {
         if (!deletedSession) {
             return errorResponse(res, 404, ERROR_MESSAGES.SESSION_NOT_FOUND);
         }
-        return res.status(204).send();
+        return successResponse(res, 200, SUCCESS_MESSAGES.SESSION_DELETED);
     } catch (error) {
         return errorResponse(res, 500, ERROR_MESSAGES.INVALID_INPUT, error);
     }

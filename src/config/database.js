@@ -35,6 +35,42 @@ const mockData = {
             rating: 4.2,
             sessions: [],
             keywords: ['HIIT', 'Cardio', 'Yoga']
+        },
+        {
+            name: 'Iron Paradise Gym',
+            location: '789 Oak Ave, Central City',
+            latitude: 34.0522,
+            longitude: -118.2437,
+            rating: 4.8,
+            sessions: [],
+            keywords: ['Bodybuilding', 'Powerlifting', 'CrossFit', 'Strength']
+        },
+        {
+            name: 'Zen Fitness Center',
+            location: '321 Pine St, Riverside',
+            latitude: 33.9533,
+            longitude: -117.3962,
+            rating: 4.6,
+            sessions: [],
+            keywords: ['Yoga', 'Pilates', 'Meditation', 'Wellness']
+        },
+        {
+            name: 'Peak Performance Athletics',
+            location: '555 Maple Dr, Springfield',
+            latitude: 39.7817,
+            longitude: -89.6501,
+            rating: 4.7,
+            sessions: [],
+            keywords: ['CrossFit', 'HIIT', 'Cardio']
+        },
+        {
+            name: 'FlexZone 24/7',
+            location: '999 Cedar Blvd, Harbor City',
+            latitude: 41.8781,
+            longitude: -87.6298,
+            rating: 4.3,
+            sessions: [],
+            keywords: ['24/7', 'Cardio', 'Weights', 'Cycling']
         }
     ],
     sessions: [
@@ -76,12 +112,20 @@ const connectDB = async () => {
                 SubscriptionPackage.insertMany(mockData.subscriptionPackages),
             ]);
             // Create gym admins and associate each with a gym
-            const gymAdminData = mockData.gymAdmins.map((g, idx) => ({
-                username: g.username,
-                email: g.email,
-                password: g.password,
-                gyms: [insertedGyms[idx % insertedGyms.length]._id]
-            }));
+            const gymAdminData = [
+                {
+                    username: mockData.gymAdmins[0].username,
+                    email: mockData.gymAdmins[0].email,
+                    password: mockData.gymAdmins[0].password,
+                    gyms: [insertedGyms[0]._id, insertedGyms[1]._id, insertedGyms[2]._id]
+                },
+                {
+                    username: mockData.gymAdmins[1].username,
+                    email: mockData.gymAdmins[1].email,
+                    password: mockData.gymAdmins[1].password,
+                    gyms: [insertedGyms[4]._id]
+                }
+            ];
             // Hash admin passwords
             for (let admin of gymAdminData) {
                 admin.password = await bcrypt.hash(admin.password, salt);
