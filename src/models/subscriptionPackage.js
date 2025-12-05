@@ -25,6 +25,10 @@ const subscriptionPackageSchema = new mongoose.Schema({
     sessionLimit: {
         type: Number,
         required: true
+    },
+    gymLimit:{
+        type: String,
+        required: true
     }
 }, { timestamps: true });
 
