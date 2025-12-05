@@ -43,10 +43,10 @@ const mockData = {
     ]
     ,
     subscriptionPackages: [
-        { id: 'basic_monthly', name: 'Basic Monthly', description: 'Access to the gym and up to 10 sessions per month.', price: 29.99, durationDays: 30, sessionLimit: 10 },
-        { id: 'premium_monthly', name: 'Premium Monthly', description: 'Unlimited access to the gym and up to 30 sessions per month.', price: 49.99, durationDays: 30, sessionLimit: 30 },
-        { id: 'basic_yearly', name: 'Basic Yearly', description: 'A full year of gym access with up to 120 sessions.', price: 299.99, durationDays: 365, sessionLimit: 120 },
-        { id: 'premium_yearly', name: 'Premium Yearly', description: 'The ultimate package with unlimited gym access and up to 365 sessions for the entire year.', price: 499.99, durationDays: 365, sessionLimit: 365 }
+        { id: 'basic_monthly', name: 'Basic Monthly', description: 'Access to the gym and up to 10 sessions per month.', price: 29.99, durationDays: 30, sessionLimit: 10, gymLimit: '3' },
+        { id: 'premium_monthly', name: 'Premium Monthly', description: 'Unlimited access to the gym and up to 30 sessions per month.', price: 49.99, durationDays: 30, sessionLimit: 30 , gymLimit: 'Unlimited'},
+        { id: 'basic_yearly', name: 'Basic Yearly', description: 'A full year of gym access with up to 120 sessions.', price: 299.99, durationDays: 365, sessionLimit: 120, gymLimit: '3' },
+        { id: 'premium_yearly', name: 'Premium Yearly', description: 'The ultimate package with unlimited gym access and up to 365 sessions for the entire year.', price: 499.99, durationDays: 365, sessionLimit: 365, gymLimit: 'Unlimited '}
     ],
     gymAdmins: [
         { username: 'admin1', email: 'admin1@example.com', password: 'adminpass1' },
@@ -145,7 +145,7 @@ const connectDB = async () => {
             const admins = await GymAdmin.find({});
             console.log('GymAdmin IDs created:');
             admins.forEach(a => console.log(a._id));
-            return;
+            return mongod;
         }
         await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
