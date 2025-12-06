@@ -5,10 +5,10 @@ import {
     searchUsersByName,
     getUserProfile,
     updateUserProfile,
-    sendFriendRequest,
-    acceptFriendRequest,
-    declineFriendRequest,
-    getFriendsList,
+    // sendFriendRequest,
+    // acceptFriendRequest,
+    // declineFriendRequest,
+    // getFriendsList,
     deleteUser
 } from '../controllers/userController.js';
 import {
@@ -68,18 +68,18 @@ router.delete('/:userId/sessions/:sessionId', authenticate, unbookUserFromSessio
 // Route to get all sessions a user is booked into
 router.get('/:userId/sessions', authenticate, getUserBookedSessions);
 
-// Friend management routes
-// Send friend request - the sender must be the authenticated user
-router.post('/:userId/friends', [authenticate, authorizeSelf], sendFriendRequest);
+// // Friend management routes
+// // Send friend request - the sender must be the authenticated user
+// router.post('/:userId/friends', [authenticate, authorizeSelf], sendFriendRequest);
 
-// Accept friend request - the acceptor must be the authenticated user
-router.put('/:userId/friends/:requestId', [authenticate, authorizeSelf], acceptFriendRequest);
+// // Accept friend request - the acceptor must be the authenticated user
+// router.put('/:userId/friends/:requestId', [authenticate, authorizeSelf], acceptFriendRequest);
 
-// Decline friend request - the decliner must be the authenticated user
-router.delete('/:userId/friends/:requestId', [authenticate, authorizeSelf], declineFriendRequest);
+// // Decline friend request - the decliner must be the authenticated user
+// router.delete('/:userId/friends/:requestId', [authenticate, authorizeSelf], declineFriendRequest);
 
-// Get friends list - only the user can see their own friends
-router.get('/:userId/friends', [authenticate, authorizeSelf], getFriendsList);
+// // Get friends list - only the user can see their own friends
+// router.get('/:userId/friends', [authenticate, authorizeSelf], getFriendsList);
 
 
 export default router;
