@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import Session from '../models/session.js';
 import User from '../models/user.js';
 import Gym from '../models/gym.js';
-import Announcement from '../models/announcement.js';
+// import Announcement from '../models/announcement.js';
 import GymAdmin from '../models/gymAdmin.js';
 import Payment from '../models/payment.js';
 import Subscription from '../models/subscription.js';
@@ -177,11 +177,11 @@ const connectDB = async () => {
                 await User.findByIdAndUpdate(user3._id, { isSubscribed: true, packageID: basicPackage.id });
             }
 
-            const announcements = [
-                { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
-                { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
-            ];
-            await Announcement.insertMany(announcements);
+            // const announcements = [
+            //     { content: 'IMPORTANT! Yoga Session time moved!', sessionId: insertedSessions[0]._id },
+            //     { content: 'Reminder: Power Gym maintenance scheduled for November 25th from 10 PM to 2 AM. We apologize for any inconvenience.', sessionId: insertedSessions[1]._id }
+            // ];
+            // await Announcement.insertMany(announcements);
             console.log('In-memory database populated with mock data.');
             const users = await User.find({});
             console.log('User IDs created:');
