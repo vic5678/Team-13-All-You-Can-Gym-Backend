@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -7,9 +7,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Continuous Integration (builds & tests)
   ci:
     runs-on: ubuntu-latest
+    env:                       
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,8 +21,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm install
+
+      - name: Debug env (optional)
+        run: |
+          echo "JWT_SECRET is set: $JWT_SECRET"
+          echo "JWT_EXPIRES_IN is set: $JWT_EXPIRES_IN"
 
       - name: Run tests
         run: npm test
