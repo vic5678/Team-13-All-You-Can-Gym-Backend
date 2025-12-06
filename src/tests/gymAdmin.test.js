@@ -25,10 +25,10 @@ const loginGymAdmin = async (gotClient, email, password) => {
     method: 'POST',
     json: { email, password },
   });
-  if (res.statusCode === 200 && res.body.data) {
+  if (res.statusCode === 200 && res.body.data && res.body.data.token) {
     return res.body.data.token;
   }
-  throw new Error(`Login failed with status ${res.statusCode}`);
+  throw new Error(`Login failed with status ${res.statusCode}: ${JSON.stringify(res.body)}`);
 };
 // END helpers
 
@@ -63,6 +63,19 @@ test.before(async (t) => {
   });
   t.context.admin = admin;
   t.context.adminPassword = 'testpassword123';
+  
+  // Verify login works before running tests
+  try {
+    const token = await loginGymAdmin(
+      t.context.got,
+      'testadmin@gym.com',
+      'testpassword123'
+    );
+    t.context.adminToken = token;
+  } catch (error) {
+    console.error('Setup error: Could not login admin during setup:', error.message);
+    throw error;
+  }
 });
 
 test.after.always(async (t) => {
@@ -99,11 +112,7 @@ test('POST /api/gymAdmins with invalid payload returns 500', async (t) => {
 
 test('GET /api/gymAdmins/:id returns single gym admin', async (t) => {
   const adminId = t.context.admin._id.toString();
-  const token = await loginGymAdmin(
-    t.context.got,
-    'testadmin@gym.com',
-    t.context.adminPassword
-  );
+  const token = t.context.adminToken;
   const res = await t.context.got(`api/gymAdmins/${adminId}`, {
     headers: {
       authorization: `Bearer ${token}`,
@@ -121,11 +130,7 @@ test('GET /api/gymAdmins/:id with not-found id returns 401 without auth', async 
 });
 
 test('GET /api/gymAdmins/:id with not-found id returns 404 with auth', async (t) => {
-  const token = await loginGymAdmin(
-    t.context.got,
-    'testadmin@gym.com',
-    t.context.adminPassword
-  );
+  const token = t.context.adminToken;
   const res = await t.context.got('api/gymAdmins/000000000000000000000000', {
     headers: {
       authorization: `Bearer ${token}`,
@@ -175,11 +180,7 @@ test('POST /api/gymAdmins/login without required fields returns 400', async (t) 
 test('POST /api/gymAdmins/:adminId/gyms adds gym to admin', async (t) => {
   const adminId = t.context.admin._id.toString();
   const gymId = t.context.gym._id.toString();
-  const token = await loginGymAdmin(
-    t.context.got,
-    'testadmin@gym.com',
-    t.context.adminPassword
-  );
+  const token = t.context.adminToken;
   const res = await t.context.got(`api/gymAdmins/${adminId}/gyms`, {
     method: 'POST',
     json: { gymId },
@@ -204,11 +205,7 @@ test('POST /api/gymAdmins/:adminId/gyms without auth returns 401', async (t) => 
 
 test('POST /api/gymAdmins/:adminId/gyms with invalid admin id returns error', async (t) => {
   const gymId = t.context.gym._id.toString();
-  const token = await loginGymAdmin(
-    t.context.got,
-    'testadmin@gym.com',
-    t.context.adminPassword
-  );
+  const token = t.context.adminToken;
   const res = await t.context.got('api/gymAdmins/000000000000000000000000/gyms', {
     method: 'POST',
     json: { gymId },
@@ -221,11 +218,7 @@ test('POST /api/gymAdmins/:adminId/gyms with invalid admin id returns error', as
 });
 
 test('GET /api/gymAdmins/:id with invalid ID format returns 500', async (t) => {
-  const token = await loginGymAdmin(
-    t.context.got,
-    'testadmin@gym.com',
-    t.context.adminPassword
-  );
+  const token = t.context.adminToken;
   const res = await t.context.got('api/gymAdmins/invalididformat', {
     headers: {
       authorization: `Bearer ${token}`,
