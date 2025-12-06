@@ -22,9 +22,7 @@ export const getAllSubscriptionPackages = async () => {
  */
 export const getSubscriptionPackageById = async (packageId) => {
     try {
-        console.log(packageId);
         const pkg = await SubscriptionPackage.findById(packageId);
-        console.log(pkg);
         if (!pkg) {
             return { status: 'error', message: 'Subscription package not found', statusCode: 404 };
         }
