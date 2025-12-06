@@ -47,16 +47,16 @@ router.delete('/:userId', [authenticate, authorizeSelf], deleteUser);
 
 // Subscription management routes
 // Route to create a new subscription
-router.post('/:userId/subscription', createSubscription);
+router.post('/:userId/subscription', authenticate, authorizeSelf, createSubscription);
 
 // Route to get all subscriptions for a user
-router.get('/:userId/subscription', getUserSubscriptions);
+router.get('/:userId/subscription', authenticate, authorizeSelf, getUserSubscriptions);
 
 // Route to update a user's subscription
-router.put('/:userId/subscription/:subscriptionId', updateSubscription);
+router.put('/:userId/subscription/:subscriptionId', authenticate, authorizeSelf, updateSubscription);
 
 // Route to cancel a user's subscription
-router.delete('/:userId/subscription/:subscriptionId', cancelSubscription);
+router.delete('/:userId/subscription/:subscriptionId', authenticate, authorizeSelf, cancelSubscription);
 
 // Session booking routes
 // Route to book a user into a session
