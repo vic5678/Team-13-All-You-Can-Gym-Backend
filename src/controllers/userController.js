@@ -146,122 +146,122 @@ export const updateUserProfile = async (req, res) => {
     }
 };
 
-/**
- * @description Send a friend request to another user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-export const sendFriendRequest = async (req, res) => {
-    try {
-        const { recipientId } = req.body;
-        const senderId = req.params.userId; // The user sending the request
+// /**
+//  * @description Send a friend request to another user
+//  * @param {Object} req - Express request object
+//  * @param {Object} res - Express response object
+//  */
+// export const sendFriendRequest = async (req, res) => {
+//     try {
+//         const { recipientId } = req.body;
+//         const senderId = req.params.userId; // The user sending the request
 
-        const recipient = await userService.getUserById(recipientId);
-        const sender = await userService.getUserById(senderId);
+//         const recipient = await userService.getUserById(recipientId);
+//         const sender = await userService.getUserById(senderId);
 
-        if (!recipient || !sender) {
-            return errorResponse(res, 404, 'User not found');
-        }
+//         if (!recipient || !sender) {
+//             return errorResponse(res, 404, 'User not found');
+//         }
 
-        // Check if already friends or request already sent
-        if (recipient.friends.includes(senderId) || recipient.friendRequests.some(req => req.from.equals(senderId))) {
-            return errorResponse(res, 400, 'Friend request already sent or already friends');
-        }
+//         // Check if already friends or request already sent
+//         if (recipient.friends.includes(senderId) || recipient.friendRequests.some(req => req.from.equals(senderId))) {
+//             return errorResponse(res, 400, 'Friend request already sent or already friends');
+//         }
 
-        recipient.friendRequests.push({ from: senderId });
-        await recipient.save();
+//         recipient.friendRequests.push({ from: senderId });
+//         await recipient.save();
 
-        return successResponse(res, 200, null, 'Friend request sent successfully');
-    } catch (error) {
-        return errorResponse(res, 500, 'Error sending friend request', error.message);
-    }
-};
+//         return successResponse(res, 200, null, 'Friend request sent successfully');
+//     } catch (error) {
+//         return errorResponse(res, 500, 'Error sending friend request', error.message);
+//     }
+// };
 
-/**
- * @description Accept a friend request
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-export const acceptFriendRequest = async (req, res) => {
-    try {
-        const { userId, requestId } = req.params; // userId is the acceptor, requestId is the sender
+// /**
+//  * @description Accept a friend request
+//  * @param {Object} req - Express request object
+//  * @param {Object} res - Express response object
+//  */
+// export const acceptFriendRequest = async (req, res) => {
+//     try {
+//         const { userId, requestId } = req.params; // userId is the acceptor, requestId is the sender
 
-        const acceptor = await userService.getUserById(userId);
-        const sender = await userService.getUserById(requestId);
+//         const acceptor = await userService.getUserById(userId);
+//         const sender = await userService.getUserById(requestId);
 
-        if (!acceptor || !sender) {
-            return errorResponse(res, 404, 'User not found');
-        }
+//         if (!acceptor || !sender) {
+//             return errorResponse(res, 404, 'User not found');
+//         }
 
-        // Find and remove the request
-        const requestIndex = acceptor.friendRequests.findIndex(req => req.from.equals(requestId));
-        if (requestIndex === -1) {
-            return errorResponse(res, 404, 'Friend request not found');
-        }
-        acceptor.friendRequests.splice(requestIndex, 1);
+//         // Find and remove the request
+//         const requestIndex = acceptor.friendRequests.findIndex(req => req.from.equals(requestId));
+//         if (requestIndex === -1) {
+//             return errorResponse(res, 404, 'Friend request not found');
+//         }
+//         acceptor.friendRequests.splice(requestIndex, 1);
 
-        // Add each other to friends lists
-        acceptor.friends.push(requestId);
-        sender.friends.push(userId);
+//         // Add each other to friends lists
+//         acceptor.friends.push(requestId);
+//         sender.friends.push(userId);
 
-        await acceptor.save();
-        await sender.save();
+//         await acceptor.save();
+//         await sender.save();
 
-        return successResponse(res, 200, null, 'Friend request accepted');
-    } catch (error) {
-        return errorResponse(res, 500, 'Error accepting friend request', error.message);
-    }
-};
+//         return successResponse(res, 200, null, 'Friend request accepted');
+//     } catch (error) {
+//         return errorResponse(res, 500, 'Error accepting friend request', error.message);
+//     }
+// };
 
-/**
- * @description Decline a friend request
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-export const declineFriendRequest = async (req, res) => {
-    try {
-        const { userId, requestId } = req.params; // userId is the decliner, requestId is the sender
+// /**
+//  * @description Decline a friend request
+//  * @param {Object} req - Express request object
+//  * @param {Object} res - Express response object
+//  */
+// export const declineFriendRequest = async (req, res) => {
+//     try {
+//         const { userId, requestId } = req.params; // userId is the decliner, requestId is the sender
 
-        const decliner = await userService.getUserById(userId);
-        if (!decliner) {
-            return errorResponse(res, 404, 'User not found');
-        }
+//         const decliner = await userService.getUserById(userId);
+//         if (!decliner) {
+//             return errorResponse(res, 404, 'User not found');
+//         }
 
-        // Find and remove the request
-        const initialLength = decliner.friendRequests.length;
-        decliner.friendRequests = decliner.friendRequests.filter(req => !req.from.equals(requestId));
+//         // Find and remove the request
+//         const initialLength = decliner.friendRequests.length;
+//         decliner.friendRequests = decliner.friendRequests.filter(req => !req.from.equals(requestId));
 
-        if (decliner.friendRequests.length === initialLength) {
-            return errorResponse(res, 404, 'Friend request not found');
-        }
+//         if (decliner.friendRequests.length === initialLength) {
+//             return errorResponse(res, 404, 'Friend request not found');
+//         }
 
-        await decliner.save();
+//         await decliner.save();
 
-        return successResponse(res, 200, null, 'Friend request declined');
-    } catch (error) {
-        return errorResponse(res, 500, 'Error declining friend request', error.message);
-    }
-};
+//         return successResponse(res, 200, null, 'Friend request declined');
+//     } catch (error) {
+//         return errorResponse(res, 500, 'Error declining friend request', error.message);
+//     }
+// };
 
-/**
- * @description Get a user's friends list
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-export const getFriendsList = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const user = await userService.getUserById(userId, { path: 'friends', select: 'username email' });
+// /**
+//  * @description Get a user's friends list
+//  * @param {Object} req - Express request object
+//  * @param {Object} res - Express response object
+//  */
+// export const getFriendsList = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+//         const user = await userService.getUserById(userId, { path: 'friends', select: 'username email' });
 
-        if (!user) {
-            return errorResponse(res, 404, 'User not found');
-        }
+//         if (!user) {
+//             return errorResponse(res, 404, 'User not found');
+//         }
 
-        return successResponse(res, 200, user.friends, 'Friends list retrieved successfully');
-    } catch (error) {
-        return errorResponse(res, 500, 'Error retrieving friends list', error.message);
-    }
-};
+//         return successResponse(res, 200, user.friends, 'Friends list retrieved successfully');
+//     } catch (error) {
+//         return errorResponse(res, 500, 'Error retrieving friends list', error.message);
+//     }
+// };
 
 /**
  * @description Delete a user
