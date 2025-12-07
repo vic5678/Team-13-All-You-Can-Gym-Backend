@@ -30,6 +30,16 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }],
+    // 👇 NEW FIELD (used by your booking service)
+    bookedSessions: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Session',
+        },
+      ],
+      default: [],          // <- crucial: no need to send it on create
+    },
 }, {
     timestamps: true,
 });
