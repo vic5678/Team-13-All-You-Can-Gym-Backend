@@ -157,3 +157,4 @@ export const getUserBookedSessions = async (req, res) => {
         return errorResponse(res, 500, 'Failed to retrieve user booked sessions', error.message);
     }
 };
+
