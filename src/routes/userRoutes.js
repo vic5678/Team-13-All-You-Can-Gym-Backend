@@ -24,8 +24,8 @@ import {
 } from '../controllers/sessionController.js';
 import { validateUserRegistration } from '../middleware/validation.js';
 import { authenticate, authorizeSelf } from '../middleware/auth.js';
-
 const router = express.Router();
+
 
 // User registration with validation
 router.post('/register', validateUserRegistration, registerUser);
@@ -80,6 +80,13 @@ router.get('/:userId/sessions', authenticate, getUserBookedSessions);
 
 // // Get friends list - only the user can see their own friends
 // router.get('/:userId/friends', [authenticate, authorizeSelf], getFriendsList);
+
+
+
+
+//
+
+
 
 
 export default router;
