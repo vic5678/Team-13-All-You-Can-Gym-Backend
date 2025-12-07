@@ -148,6 +148,26 @@ test('POST /api/sessions creates a valid session', async (t) => {
   t.is(res.body.data.name, payload.name);
 });
 
+test('POST /api/sessions with non-existing gymId returns 500 (or 400 if you handle)', async (t) => {
+  const fakeGymId = '000000000000000000000000';
+
+  const res = await t.context.got('api/sessions', {
+    method: 'POST',
+    json: {
+      name: 'Bad Gym Session',
+      gymId: fakeGymId,
+      dateTime: new Date().toISOString(),
+      description: 'desc',
+      type: 'Test',
+      capacity: 5,
+      trainerName: 'X',
+    },
+  });
+
+  t.true(res.statusCode >= 400);
+});
+
+
 test('POST /api/sessions with invalid payload returns 400', async (t) => {
   const res = await t.context.got('api/sessions', {
     method: 'POST',
@@ -157,6 +177,7 @@ test('POST /api/sessions with invalid payload returns 400', async (t) => {
   t.true(res.body.success === false);
 });
 
+
 test('GET /api/sessions/search returns filtered results', async (t) => {
   const keyword = encodeURIComponent('Yoga'); // matches seeded mock data
   const res = await t.context.got(`api/sessions/search?keyword=${keyword}`);
@@ -164,6 +185,7 @@ test('GET /api/sessions/search returns filtered results', async (t) => {
   t.true(res.body.success === true);
   t.true(Array.isArray(res.body.data));
 });
+
 
 test('PUT /api/sessions/:id without auth returns 401', async (t) => {
   const id = t.context.session._id.toString();
@@ -174,11 +196,61 @@ test('PUT /api/sessions/:id without auth returns 401', async (t) => {
   t.is(res.statusCode, 401);
 });
 
+
 test('DELETE /api/sessions/:id without auth returns 401', async (t) => {
   const id = t.context.session._id.toString();
   const res = await t.context.got(`api/sessions/${id}`, { method: 'DELETE' });
   t.is(res.statusCode, 401);
 });
+
+test.serial('PUT /api/sessions/:id returns 403 when gym admin does not manage that gym', async (t) => {
+  const { got, gym, session } = t.context;
+
+  // 1. Create a GymAdmin assigned to a DIFFERENT gym
+  const otherGym = await Gym.create({
+    name: 'Admin Forbidden Gym',
+    location: 'Nope St',
+    latitude: 0,
+    longitude: 0,
+  });
+
+  const hashed = await bcrypt.hash('adminpass', 10);
+
+  const forbiddenAdmin = await User.create({
+    username: 'wrongadmin',
+    email: 'wrongadmin@example.com',
+    password: hashed,
+    role: 'gymAdmin',
+    gyms: [otherGym._id], // they DO NOT manage the session's gym
+  });
+
+  // 2. Login as that admin
+  const resLogin = await got('api/users/login', {
+    method: 'POST',
+    json: {
+      email: forbiddenAdmin.email,
+      password: 'adminpass',
+    },
+  });
+
+  const token = resLogin.body.data.token;
+
+  // 3. Attempt to update session from wrong gym
+  const res = await got(`api/sessions/${session._id}`, {
+    method: 'PUT',
+    json: { name: 'Illegal Update Attempt' },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 403);
+  t.false(res.body.success);
+});
+
+
+
+
 
 // ----------------------
 // Booking-related endpoints (with auth)
@@ -187,6 +259,7 @@ test('DELETE /api/sessions/:id without auth returns 401', async (t) => {
 //   DELETE /api/users/:userId/sessions/:sid  -> unbook
 //   GET    /api/users/:userId/sessions       -> list booked
 // ----------------------
+
 
 test.serial('POST /api/users/:userId/sessions books user into a session', async (t) => {
   const { got, user, userPassword, session } = t.context;
@@ -314,3 +387,155 @@ test.serial('GET /api/users/:userId/sessions returns user booked sessions', asyn
   t.true(ids.includes(sessionId));
 });
 
+test.serial('POST /api/users/:userId/sessions returns 400 when session is full', async (t) => {
+  const { got, user, userPassword, gym } = t.context;
+
+  const userId = user._id.toString();
+  const token = await loginUser(got, user.email, userPassword);
+
+  // Create another user to occupy the only spot
+  const otherUserHashed = await bcrypt.hash('otherpass', 10);
+  const otherUser = await User.create({
+    username: 'othersessionuser',
+    email: `other+${Date.now()}@example.com`,
+    password: otherUserHashed,
+    role: 'user',
+  });
+
+  // Create a session with capacity 1 that is already full
+  const fullSession = await Session.create({
+    name: 'Full Session',
+    gymId: gym._id.toString(),
+    dateTime: new Date(Date.now() + 60 * 60 * 1000), // 1 hour in the future
+    description: 'Already full',
+    type: 'Test',
+    capacity: 1,
+    trainerName: 'Full Trainer',
+    participants: [otherUser._id],
+  });
+
+  const res = await got(`api/users/${userId}/sessions`, {
+    method: 'POST',
+    json: { sessionId: fullSession._id.toString() },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 400);
+  t.false(res.body.success);
+  t.is(res.body.message, 'Session is full');
+});
+
+
+test.serial('GET /api/users/:userId/sessions returns empty array when user has no bookings', async (t) => {
+  const { got, user, userPassword } = t.context;
+
+  const userId = user._id.toString();
+  const token = await loginUser(got, user.email, userPassword);
+
+  // Ensure user has NO bookings
+  await User.findByIdAndUpdate(userId, { bookedSessions: [] });
+
+  const res = await got(`api/users/${userId}/sessions`, {
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 200);
+  t.true(res.body.success);
+  t.true(Array.isArray(res.body.data));
+  t.is(res.body.data.length, 0);
+});
+
+test('GET /api/users/:userId/sessions returns 401 without auth token', async (t) => {
+  const { user, got } = t.context;
+
+  const userId = user._id.toString();
+
+  const res = await got(`api/users/${userId}/sessions`);
+
+  t.is(res.statusCode, 401);
+});
+
+test.serial('DELETE /api/users/:userId/sessions/:sessionId returns 404 when session not found', async (t) => {
+  const { got, user, userPassword } = t.context;
+
+  const userId = user._id.toString();
+  const token = await loginUser(got, user.email, userPassword);
+
+  const fakeSessionId = '000000000000000000000000';
+
+  const res = await got(`api/users/${userId}/sessions/${fakeSessionId}`, {
+    method: 'DELETE',
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 404);
+  t.false(res.body.success);
+  t.is(res.body.message, 'Session not found');
+});
+
+test.serial('DELETE /api/users/:userId/sessions/:sessionId returns 404 when user not found', async (t) => {
+  const { got, user, userPassword, session } = t.context;
+
+  const token = await loginUser(got, user.email, userPassword);
+  const fakeUserId = '000000000000000000000000';
+  const sessionId = session._id.toString();
+
+  const res = await got(`api/users/${fakeUserId}/sessions/${sessionId}`, {
+    method: 'DELETE',
+    method: 'DELETE',
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 404);
+  t.false(res.body.success);
+  t.is(res.body.message, 'User not found');
+});
+
+test.serial('POST /api/users/:userId/sessions returns 404 when user not found', async (t) => {
+  const { got, user, userPassword, session } = t.context;
+
+  const token = await loginUser(got, user.email, userPassword);
+  const fakeUserId = '000000000000000000000000';
+  const sessionId = session._id.toString();
+
+  const res = await got(`api/users/${fakeUserId}/sessions`, {
+    method: 'POST',
+    json: { sessionId },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 404);
+  t.false(res.body.success);
+  t.is(res.body.message, 'User not found');
+});
+
+test.serial('POST /api/users/:userId/sessions returns 404 when session not found', async (t) => {
+  const { got, user, userPassword } = t.context;
+
+  const userId = user._id.toString();
+  const token = await loginUser(got, user.email, userPassword);
+
+  const fakeSessionId = '000000000000000000000000';
+
+  const res = await got(`api/users/${userId}/sessions`, {
+    method: 'POST',
+    json: { sessionId: fakeSessionId },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  t.is(res.statusCode, 404);
+  t.false(res.body.success);
+  t.is(res.body.message, 'Session not found');
+});
