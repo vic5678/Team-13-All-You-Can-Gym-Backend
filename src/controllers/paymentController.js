@@ -21,11 +21,11 @@ export const processPayment = async (req, res) => {
         // Find the subscription package by the string id field (not MongoDB _id)
         const subscriptionPackage = await subscriptionService.getSubscriptionPackageById(packageId);
         
-        if (!subscriptionPackage) {
+        if (!subscriptionPackage || subscriptionPackage.status === 'error') {
             return errorResponse(
                 res, 
-                404, 
-                'Subscription package not found', 
+                subscriptionPackage?.statusCode || 404, 
+                subscriptionPackage?.message || 'Subscription package not found', 
                 null
             );
         }

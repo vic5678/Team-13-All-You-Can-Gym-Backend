@@ -75,14 +75,23 @@ export const processPayment = async (paymentData) => {
             if (subRes && subRes.status === 'success') {
                 return {
                     success: true,
-                    data: { payment: paymentResult, subscription: subRes.data },
+                    data: { 
+                        transactionId: payment.transactionId,
+                        status: payment.status,
+                        amount: payment.amount,
+                        subscription: subRes.data 
+                    },
                 };
             } else {
                 // Subscription creation failed; still return payment success but include error
                 console.log('[paymentService] Subscription creation failed:', subRes);
                 return {
                     success: true,
-                    data: { payment: paymentResult },
+                    data: { 
+                        transactionId: payment.transactionId,
+                        status: payment.status,
+                        amount: payment.amount
+                    },
                     warning: 'Payment processed but subscription assignment failed',
                     subscriptionError: subRes,
                 };
@@ -91,7 +100,11 @@ export const processPayment = async (paymentData) => {
             console.error('[paymentService] Subscription creation threw error:', err);
             return {
                 success: true,
-                data: { payment: paymentResult },
+                data: { 
+                    transactionId: payment.transactionId,
+                    status: payment.status,
+                    amount: payment.amount
+                },
                 warning: 'Payment processed but subscription assignment threw an error',
                 subscriptionError: err.message || String(err),
             };

@@ -17,7 +17,7 @@ export const getAllSubscriptionPackages = async () => {
 
 /**
  * Get a subscription package by its ID.
- * @param {string} packageId - The ID of the subscription package.
+ * @param {string} packageId - The ID of the subscription package (string id field like 'basic_monthly', not MongoDB _id).
  * @returns {Promise<Object>} - The subscription package.
  */
 export const getSubscriptionPackageById = async (packageId) => {

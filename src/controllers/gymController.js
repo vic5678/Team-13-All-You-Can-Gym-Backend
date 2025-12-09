@@ -30,6 +30,10 @@ export const getGymById = async (req, res) => {
         }
         return successResponse(res, 200, SUCCESS_MESSAGES.GYM_RETRIEVED, gym);
     } catch (error) {
+        // Invalid ObjectId format should return 404
+        if (error.name === 'CastError' || error.message.includes('Cast to ObjectId failed')) {
+            return errorResponse(res, 404, ERROR_MESSAGES.GYM_NOT_FOUND);
+        }
         return errorResponse(res, 500, error.message || ERROR_MESSAGES.INVALID_INPUT, error);
     }
 };
