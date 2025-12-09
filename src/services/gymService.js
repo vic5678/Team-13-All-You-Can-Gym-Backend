@@ -27,10 +27,7 @@ class GymService {
     async getGymById(gymId) {
         try {
             const gym = await Gym.findById(gymId);
-            if (!gym) {
-                throw new Error(ERROR_MESSAGES.GYM_NOT_FOUND);
-            }
-            return gym;
+            return gym; // Return null if not found, let controller handle it
         } catch (error) {
             throw error;
         }
@@ -147,8 +144,9 @@ class GymService {
      */
     async searchGyms(keyword) {
         try {
+            // Return all gyms if no keyword or empty keyword
             if (!keyword || keyword.trim() === '') {
-                return [];
+                return await Gym.find();
             }
             const query = {
                 $or: [

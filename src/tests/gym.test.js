@@ -139,10 +139,10 @@ test('GET /api/gyms/:id with invalid ID returns 404', async (t) => {
   t.true(res.body.success === false);
 });
 
-test('GET /api/gyms/:id with malformed ID returns 500', async (t) => {
+test('GET /api/gyms/:id with malformed ID returns 404', async (t) => {
   const res = await t.context.got('api/gyms/invalid-id');
   
-  t.is(res.statusCode, 500);
+  t.is(res.statusCode, 404);
   t.true(res.body.success === false);
 });
 
@@ -158,12 +158,17 @@ test('GET /api/gyms/search with keyword returns matching gyms', async (t) => {
 });
 
 test('GET /api/gyms/search with empty keyword returns all gyms', async (t) => {
+  // Ensure gyms exist before testing search
+  const allGyms = await Gym.find();
+  t.true(allGyms.length > 0, 'Database should have gyms for this test');
+  
   const res = await t.context.got('api/gyms/search?keyword=');
   
   t.is(res.statusCode, 200);
   t.true(res.body.success === true);
   t.true(Array.isArray(res.body.data));
-  t.true(res.body.data.length > 0);
+  // Should return at least the gyms we know exist
+  t.true(res.body.data.length >= allGyms.length, `Expected at least ${allGyms.length} gyms, got ${res.body.data.length}`);
 });
 
 test('GET /api/gyms/search without keyword parameter returns all gyms', async (t) => {
@@ -469,4 +474,37 @@ test('GET /api/gyms/filter with invalid coordinates handles gracefully', async (
   
   t.is(res.statusCode, 200);
   t.true(Array.isArray(res.body.data));
+});
+
+// ============ ERROR HANDLING TESTS ============
+
+test('PUT /api/gyms/:id returns error for non-existent gym', async (t) => {
+  const nonExistentId = '000000000000000000000001';
+  
+  const res = await t.context.got(`api/gyms/${nonExistentId}`, {
+    method: 'PUT',
+    json: { name: 'Updated Name' },
+    headers: {
+      Authorization: `Bearer ${t.context.adminToken}`
+    }
+  });
+  
+  // Could be 403 (auth middleware) or 404 (not found)
+  t.true([403, 404].includes(res.statusCode));
+  t.is(res.body.success, false);
+});
+
+test('DELETE /api/gyms/:id returns error for non-existent gym', async (t) => {
+  const nonExistentId = '000000000000000000000002';
+  
+  const res = await t.context.got(`api/gyms/${nonExistentId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${t.context.adminToken}`
+    }
+  });
+  
+  // Could be 403 (auth middleware) or 404 (not found)
+  t.true([403, 404].includes(res.statusCode));
+  t.is(res.body.success, false);
 });

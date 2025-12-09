@@ -59,7 +59,8 @@ test.before(async (t) => {
       description: 'Test package',
       price: 29.99,
       durationDays: 30,
-      sessionLimit: 10
+      sessionLimit: 10,
+      gymLimit: 'unlimited'
     });
   }
   t.context.package = pkg;
