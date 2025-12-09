@@ -22,10 +22,7 @@ export const getAllSubscriptionPackages = async () => {
  */
 export const getSubscriptionPackageById = async (packageId) => {
     try {
-        console.log(packageId);
-        // Search by the 'id' field (string like 'basic_monthly'), not MongoDB _id
-        const pkg = await SubscriptionPackage.findOne({ id: packageId });
-        console.log(pkg);
+        const pkg = await SubscriptionPackage.findById(packageId);
         if (!pkg) {
             return { status: 'error', message: 'Subscription package not found', statusCode: 404 };
         }

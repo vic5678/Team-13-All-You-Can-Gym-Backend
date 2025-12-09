@@ -86,6 +86,9 @@ export const loginUser = async (req, res) => {
 export const searchUsersByName = async (req, res) => {
     try {
         const { username } = req.query;
+        if (!username) {
+            return errorResponse(res, 400, 'Username query parameter is required.');
+        }
         const users = await userService.searchUsersByName(username);
         return successResponse(res, 200, SUCCESS_MESSAGES.USER_RETRIEVED, users);
     } catch (error) {
@@ -277,7 +280,7 @@ export const deleteUser = async (req, res) => {
             return errorResponse(res, 404, 'User not found');
         }
 
-        return successResponse(res, 204, null, 'User deleted successfully');
+        return successResponse(res, 200, 'User deleted successfully', null);
     } catch (error) {
         return errorResponse(res, 500, 'Error deleting user');
     }

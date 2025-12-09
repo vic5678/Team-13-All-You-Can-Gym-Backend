@@ -30,6 +30,15 @@ const sessionSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    participants: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
+      default: [],          // <- this makes it optional & empty by default
+    },
 }, { timestamps: true });
 
 const Session = mongoose.model('Session', sessionSchema);
