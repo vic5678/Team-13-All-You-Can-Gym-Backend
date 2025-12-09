@@ -88,13 +88,13 @@ test.after.always(async (t) => {
 // ============ HAPPY PATH TESTS ============
 
 test('POST /api/payments/checkout/:packageId processes valid payment', async (t) => {
-  const packageId = t.context.package.id; // Use string id (e.g., 'basic_monthly')
+  const packageId = t.context.package._id; // Use string id (e.g., 'basic_monthly')
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
     cvv: '123'
   };
-
+  
   const res = await t.context.got(`api/payments/checkout/${packageId}`, {
     method: 'POST',
     json: payload,
@@ -112,7 +112,7 @@ test('POST /api/payments/checkout/:packageId processes valid payment', async (t)
 });
 
 test('Payment is saved in database after successful processing', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/26',
@@ -142,7 +142,7 @@ test('Payment is saved in database after successful processing', async (t) => {
 // ============ ERROR PATH TESTS ============
 
 test('POST /api/payments/checkout/:packageId without auth returns 401', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
@@ -160,13 +160,14 @@ test('POST /api/payments/checkout/:packageId without auth returns 401', async (t
 });
 
 test('POST /api/payments/checkout/:packageId with invalid package returns 404', async (t) => {
+  const packageId = '000000000000000000000000'
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
     cvv: '123'
   };
 
-  const res = await t.context.got('api/payments/checkout/invalid_package_id', {
+  const res = await t.context.got(`api/payments/checkout/${packageId}`, {
     method: 'POST',
     json: payload,
     headers: {
@@ -179,7 +180,7 @@ test('POST /api/payments/checkout/:packageId with invalid package returns 404', 
 });
 
 test('POST /api/payments/checkout/:packageId with missing cardNumber returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     // Missing cardNumber
     expiryDate: '12/25',
@@ -199,7 +200,7 @@ test('POST /api/payments/checkout/:packageId with missing cardNumber returns 400
 });
 
 test('POST /api/payments/checkout/:packageId with missing expiryDate returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     // Missing expiryDate
@@ -219,7 +220,7 @@ test('POST /api/payments/checkout/:packageId with missing expiryDate returns 400
 });
 
 test('POST /api/payments/checkout/:packageId with missing cvv returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25'
@@ -239,7 +240,7 @@ test('POST /api/payments/checkout/:packageId with missing cvv returns 400', asyn
 });
 
 test('POST /api/payments/checkout/:packageId with invalid cardNumber returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '1234', // Too short
     expiryDate: '12/25',
@@ -259,7 +260,7 @@ test('POST /api/payments/checkout/:packageId with invalid cardNumber returns 400
 });
 
 test('POST /api/payments/checkout/:packageId with expired card returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/20', // Expired date
@@ -279,7 +280,7 @@ test('POST /api/payments/checkout/:packageId with expired card returns 400', asy
 });
 
 test('POST /api/payments/checkout/:packageId with invalid CVV returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
@@ -301,7 +302,7 @@ test('POST /api/payments/checkout/:packageId with invalid CVV returns 400', asyn
 // ============ EDGE CASE TESTS ============
 
 test('POST /api/payments/checkout/:packageId with empty payload returns 400', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   
   const res = await t.context.got(`api/payments/checkout/${packageId}`, {
     method: 'POST',
@@ -316,7 +317,7 @@ test('POST /api/payments/checkout/:packageId with empty payload returns 400', as
 });
 
 test('POST /api/payments/checkout/:packageId with invalid token returns 401', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
@@ -336,7 +337,7 @@ test('POST /api/payments/checkout/:packageId with invalid token returns 401', as
 });
 
 test('POST /api/payments/checkout/:packageId amount is set server-side', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
@@ -359,7 +360,7 @@ test('POST /api/payments/checkout/:packageId amount is set server-side', async (
 });
 
 test('Multiple payments can be processed for same user', async (t) => {
-  const packageId = t.context.package.id;
+  const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
     expiryDate: '12/25',
