@@ -32,6 +32,11 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:cov -- --reporter=text --reporter=text-summary
 
+      - name: Add coverage to job summary
+        run: |
+          echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          npx c8 report --reporter=text-summary >> $GITHUB_STEP_SUMMARY
+
   cd:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
