@@ -29,8 +29,8 @@ jobs:
           echo "JWT_SECRET is set: $JWT_SECRET"
           echo "JWT_EXPIRES_IN is set: $JWT_EXPIRES_IN"
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:cov -- --reporter=text --reporter=text-summary
 
   cd:
     runs-on: ubuntu-latest
