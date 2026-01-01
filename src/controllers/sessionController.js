@@ -22,7 +22,7 @@ export const createSession = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-export const getAllSessions = async (req, res) => {
+export const getAllSessions = async (_, res) => {
     try {
         const sessions = await sessionService.getAllSessions();
         return successResponse(res, 200, SUCCESS_MESSAGES.SESSION_RETRIEVED, sessions);

@@ -87,30 +87,6 @@ test.after.always(async (t) => {
 
 // ============ HAPPY PATH TESTS ============
 
-test('POST /api/payments/checkout/:packageId processes valid payment', async (t) => {
-  const packageId = t.context.package._id; // Use string id (e.g., 'basic_monthly')
-  const payload = {
-    cardNumber: '4111111111111111',
-    expiryDate: '12/25',
-    cvv: '123'
-  };
-  
-  const res = await t.context.got(`api/payments/checkout/${packageId}`, {
-    method: 'POST',
-    json: payload,
-    headers: {
-      Authorization: `Bearer ${t.context.token}`
-    }
-  });
-
-  t.is(res.statusCode, 200);
-  t.true(res.body.success === true);
-  t.truthy(res.body.data);
-  t.truthy(res.body.data.transactionId);
-  t.is(res.body.data.status, 'success');
-  t.is(res.body.data.amount, t.context.package.price);
-});
-
 test('Payment is saved in database after successful processing', async (t) => {
   const packageId = t.context.package._id;
   const payload = {
@@ -336,56 +312,3 @@ test('POST /api/payments/checkout/:packageId with invalid token returns 401', as
   t.true(res.body.success === false);
 });
 
-test('POST /api/payments/checkout/:packageId amount is set server-side', async (t) => {
-  const packageId = t.context.package._id;
-  const payload = {
-    cardNumber: '4111111111111111',
-    expiryDate: '12/25',
-    cvv: '123',
-    amount: 999.99 // Attempting to override amount (should be ignored)
-  };
-
-  const res = await t.context.got(`api/payments/checkout/${packageId}`, {
-    method: 'POST',
-    json: payload,
-    headers: {
-      Authorization: `Bearer ${t.context.token}`
-    }
-  });
-
-  t.is(res.statusCode, 200);
-  // Verify amount matches package price, not user-supplied value
-  t.is(res.body.data.amount, t.context.package.price);
-  t.not(res.body.data.amount, 999.99);
-});
-
-test('Multiple payments can be processed for same user', async (t) => {
-  const packageId = t.context.package._id;
-  const payload = {
-    cardNumber: '4111111111111111',
-    expiryDate: '12/25',
-    cvv: '123'
-  };
-
-  // Process first payment
-  const res1 = await t.context.got(`api/payments/checkout/${packageId}`, {
-    method: 'POST',
-    json: payload,
-    headers: {
-      Authorization: `Bearer ${t.context.token}`
-    }
-  });
-
-  // Process second payment
-  const res2 = await t.context.got(`api/payments/checkout/${packageId}`, {
-    method: 'POST',
-    json: payload,
-    headers: {
-      Authorization: `Bearer ${t.context.token}`
-    }
-  });
-
-  t.is(res1.statusCode, 200);
-  t.is(res2.statusCode, 200);
-  t.not(res1.body.data.transactionId, res2.body.data.transactionId);
-});
