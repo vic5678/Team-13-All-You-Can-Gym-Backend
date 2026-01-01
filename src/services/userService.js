@@ -1,7 +1,6 @@
 import User from '../models/user.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
