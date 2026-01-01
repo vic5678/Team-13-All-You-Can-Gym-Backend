@@ -1,8 +1,6 @@
 import * as userService from '../services/userService.js';
 import { successResponse, errorResponse } from '../utils/responses.js';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from "../models/user.js";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../config/constants.js';
 import dotenv from 'dotenv';
 
@@ -10,7 +8,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 /**
  * @description Register a new user
  * @param {Object} req - Express request object
