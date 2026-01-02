@@ -9,9 +9,8 @@
  * @param {Error} err - The error object.
  * @param {Request} req - The request object.
  * @param {Response} res - The response object.
- * @param {NextFunction} next - The next middleware function.
  */
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res) => {
     console.error(err.stack);
 
     const statusCode = err.status || 500;

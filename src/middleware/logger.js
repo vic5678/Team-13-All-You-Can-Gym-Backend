@@ -14,7 +14,7 @@ export const logger = createLogger({
 });
 
 // Middleware to log requests and responses
-export const logRequests = (req, res, next) => {
+export const logRequests = (req, _res, next) => {
     logger.info({
         method: req.method,
         url: req.originalUrl,
@@ -26,7 +26,7 @@ export const logRequests = (req, res, next) => {
 };
 
 // Middleware to log errors
-export const logErrors = (err, req, res, next) => {
+export const logErrors = (err, _req, _res, next) => {
     logger.error({
         message: err.message,
         stack: err.stack,

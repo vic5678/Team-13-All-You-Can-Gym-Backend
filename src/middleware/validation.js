@@ -1,4 +1,4 @@
-import { body, param, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 
 /**
  * Validate the creation of a new session.
