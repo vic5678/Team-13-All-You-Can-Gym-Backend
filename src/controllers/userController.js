@@ -7,7 +7,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
 /**
  * @description Register a new user
  * @param {Object} req - Express request object
