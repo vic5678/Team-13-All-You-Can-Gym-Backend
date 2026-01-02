@@ -25,12 +25,8 @@ class GymService {
      * @returns {Promise<Object>} The gym object.
      */
     async getGymById(gymId) {
-        try {
-            const gym = await Gym.findById(gymId);
-            return gym; // Return null if not found, let controller handle it
-        } catch (error) {
-            throw error;
-        }
+        const gym = await Gym.findById(gymId);
+        return gym; // Return null if not found, let controller handle it
     }
 
     /**
@@ -55,15 +51,11 @@ class GymService {
      * @returns {Promise<Object>} The updated gym object.
      */
     async updateGym(gymId, gymData) {
-        try {
-            const gym = await Gym.findByIdAndUpdate(gymId, gymData, { new: true });
-            if (!gym) {
-                throw new Error(ERROR_MESSAGES.GYM_NOT_FOUND);
-            }
-            return gym;
-        } catch (error) {
-            throw error;
+        const gym = await Gym.findByIdAndUpdate(gymId, gymData, { new: true });
+        if (!gym) {
+            throw new Error(ERROR_MESSAGES.GYM_NOT_FOUND);
         }
+        return gym;
     }
 
     /**
@@ -72,15 +64,11 @@ class GymService {
      * @returns {Promise<Object>} The deleted gym object.
      */
     async deleteGym(gymId) {
-        try {
-            const result = await Gym.findByIdAndDelete(gymId);
-            if (!result) {
-                throw new Error(ERROR_MESSAGES.GYM_NOT_FOUND);
-            }
-            return result;
-        } catch (error) {
-            throw error;
+        const result = await Gym.findByIdAndDelete(gymId);
+        if (!result) {
+            throw new Error(ERROR_MESSAGES.GYM_NOT_FOUND);
         }
+        return result;
     }
 
     /**
@@ -93,48 +81,44 @@ class GymService {
      * @returns {Promise<Array>} Filtered list of gyms.
      */
     async filterGyms({ sessionType, latitude, longitude, distance }) {
-        try {
-            const query = {};
+        const query = {};
 
-            // If a sessionType filter is provided, find sessions matching that type
-            // and filter gyms that reference those session IDs
-            if (sessionType) {
-                const sessions = await Session.find({ type: { $regex: sessionType, $options: 'i' } }, { _id: 1 });
-                const sessionIds = sessions.map(s => s._id);
-                if (sessionIds.length === 0) {
-                    // No sessions match the requested type — return empty list
-                    return [];
-                }
-                query.sessions = { $in: sessionIds };
+        // If a sessionType filter is provided, find sessions matching that type
+        // and filter gyms that reference those session IDs
+        if (sessionType) {
+            const sessions = await Session.find({ type: { $regex: sessionType, $options: 'i' } }, { _id: 1 });
+            const sessionIds = sessions.map(s => s._id);
+            if (sessionIds.length === 0) {
+                // No sessions match the requested type — return empty list
+                return [];
             }
-
-            const gyms = await Gym.find(query);
-
-            // Filter gyms by distance if user latitude and longitude provided
-            let filteredGyms = gyms;
-            if (latitude && longitude) {
-                const userLat = parseFloat(latitude);
-                const userLon = parseFloat(longitude);
-                const maxDistance = distance ? parseFloat(distance) : null;
-
-                if (!isNaN(userLat) && !isNaN(userLon)) {
-                    filteredGyms = gyms.filter(gym => {
-                        const distanceInKm = this.calculateDistance(userLat, userLon, gym.latitude, gym.longitude);
-                        console.log(`Gym: ${gym.name}, Distance: ${distanceInKm.toFixed(2)} km`);
-                        
-                        // If maxDistance is provided, filter by it; otherwise include all
-                        if (maxDistance !== null && !isNaN(maxDistance)) {
-                            return distanceInKm <= maxDistance;
-                        }
-                        return true;
-                    });
-                }
-            }
-
-            return filteredGyms;
-        } catch (error) {
-            throw error;
+            query.sessions = { $in: sessionIds };
         }
+
+        const gyms = await Gym.find(query);
+
+        // Filter gyms by distance if user latitude and longitude provided
+        let filteredGyms = gyms;
+        if (latitude && longitude) {
+            const userLat = parseFloat(latitude);
+            const userLon = parseFloat(longitude);
+            const maxDistance = distance ? parseFloat(distance) : null;
+
+            if (!isNaN(userLat) && !isNaN(userLon)) {
+                filteredGyms = gyms.filter(gym => {
+                    const distanceInKm = this.calculateDistance(userLat, userLon, gym.latitude, gym.longitude);
+                    console.log(`Gym: ${gym.name}, Distance: ${distanceInKm.toFixed(2)} km`);
+                    
+                    // If maxDistance is provided, filter by it; otherwise include all
+                    if (maxDistance !== null && !isNaN(maxDistance)) {
+                        return distanceInKm <= maxDistance;
+                    }
+                    return true;
+                });
+            }
+        }
+
+        return filteredGyms;
     }
 
     /**

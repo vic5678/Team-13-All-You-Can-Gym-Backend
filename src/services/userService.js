@@ -40,7 +40,6 @@ export const createUser = async (userData) => {
 };
 
 export const loginUser = async(email, password) => {
-  try {
     // Frontend sends "username" even if it's an email -> treat as identifier
     if (!email || !password) {
       throw new Error("Email/username and password are required");
@@ -77,9 +76,6 @@ export const loginUser = async(email, password) => {
       role: "user",
       token,
     };
-} catch (error) {
-    throw error;
-}
 }
 
 /**
@@ -88,17 +84,13 @@ export const loginUser = async(email, password) => {
  * @returns {Promise<Array>} - List of matching users.
  */
 export const searchUsersByName = async (keyword) => {
-    try {
-        if (!keyword || keyword.trim() === '') {
-            return [];
-        }
-        const query = {
-            username: { $regex: keyword, $options: 'i' }
-        };
-        return await User.find(query).select('username _id');
-    } catch (error) {
-        throw new Error('Error searching users: ' + error.message);
+    if (!keyword || keyword.trim() === '') {
+        return [];
     }
+    const query = {
+        username: { $regex: keyword, $options: 'i' }
+    };
+    return await User.find(query).select('username _id');
 }
 
 /**
