@@ -5,11 +5,11 @@ const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
 export const options = {
   stages: [
-    { duration: '5s', target: 10 },    // Ramp up to 10 users over 2 minutes
-    { duration: '15s', target: 50 },    // Ramp up to 50 users over 5 minutes
-    { duration: '15s', target: 100 },   // Ramp up to 100 users over 5 minutes
-    { duration: '15s', target: 50 },    // Ramp down to 50 users over 5 minutes
-    { duration: '5s', target: 0 },     // Ramp down to 0 users over 2 minutes
+    { duration: '1m', target: 100 },    // Ramp up to 10 users over 2 minutes
+    { duration: '3m', target: 500 },    // Ramp up to 50 users over 5 minutes
+    { duration: '3m', target: 1000 },   // Ramp up to 100 users over 5 minutes
+    { duration: '3m', target: 500 },    // Ramp down to 50 users over 5 minutes
+    { duration: '1m', target: 0 },     // Ramp down to 0 users over 2 minutes
   ],
   thresholds: {
     http_req_duration: ['p(95)<500', 'p(99)<1000'],  // 95th percentile under 500ms, 99th under 1000ms
