@@ -10,7 +10,7 @@
  * @param {Request} req - The request object.
  * @param {Response} res - The response object.
  */
-export const errorHandler = (err, req, res) => {
+export const errorHandler = (err, _req, res) => {
     console.error(err.stack);
 
     const statusCode = err.status || 500;
