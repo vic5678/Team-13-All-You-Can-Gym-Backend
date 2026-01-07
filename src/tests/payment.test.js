@@ -91,7 +91,7 @@ test('POST /api/payments/checkout/:packageId processes valid payment', async (t)
   const packageId = t.context.package._id; // Use string id (e.g., 'basic_monthly')
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
   
@@ -115,7 +115,7 @@ test('Payment is saved in database after successful processing', async (t) => {
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/26',
+    expiryDate: '12/27',
     cvv: '456'
   };
 
@@ -145,7 +145,7 @@ test('POST /api/payments/checkout/:packageId without auth returns 401', async (t
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
@@ -163,7 +163,7 @@ test('POST /api/payments/checkout/:packageId with invalid package returns 404', 
   const packageId = '000000000000000000000000'
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
@@ -183,7 +183,7 @@ test('POST /api/payments/checkout/:packageId with missing cardNumber returns 400
   const packageId = t.context.package._id;
   const payload = {
     // Missing cardNumber
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
@@ -223,7 +223,7 @@ test('POST /api/payments/checkout/:packageId with missing cvv returns 400', asyn
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25'
+    expiryDate: '12/27'
     // Missing cvv
   };
 
@@ -243,7 +243,7 @@ test('POST /api/payments/checkout/:packageId with invalid cardNumber returns 400
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '1234', // Too short
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
@@ -283,7 +283,7 @@ test('POST /api/payments/checkout/:packageId with invalid CVV returns 400', asyn
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '12' // Too short
   };
 
@@ -320,7 +320,7 @@ test('POST /api/payments/checkout/:packageId with invalid token returns 401', as
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
@@ -340,7 +340,7 @@ test('POST /api/payments/checkout/:packageId amount is set server-side', async (
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123',
     amount: 999.99 // Attempting to override amount (should be ignored)
   };
@@ -363,7 +363,7 @@ test('Multiple payments can be processed for same user', async (t) => {
   const packageId = t.context.package._id;
   const payload = {
     cardNumber: '4111111111111111',
-    expiryDate: '12/25',
+    expiryDate: '12/27',
     cvv: '123'
   };
 
