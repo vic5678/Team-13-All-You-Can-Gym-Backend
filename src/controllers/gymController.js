@@ -8,7 +8,7 @@ import { successResponse, errorResponse } from '../utils/responses.js';
  * @route GET /gyms
  * @access Public
  */
-export const getAllGyms = async (req, res) => {
+export const getAllGyms = async (_, res) => {
     try {
         const gyms = await gymService.getAllGyms();
         return successResponse(res, 200, SUCCESS_MESSAGES.GYMS_RETRIEVED, gyms);

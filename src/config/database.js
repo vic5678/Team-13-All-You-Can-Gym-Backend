@@ -6,7 +6,6 @@ import User from '../models/user.js';
 import Gym from '../models/gym.js';
 // import Announcement from '../models/announcement.js';
 import GymAdmin from '../models/gymAdmin.js';
-import Payment from '../models/payment.js';
 import Subscription from '../models/subscription.js';
 import SubscriptionPackage from '../models/subscriptionPackage.js';
 
@@ -130,7 +129,7 @@ const connectDB = async () => {
             for (let admin of gymAdminData) {
                 admin.password = await bcrypt.hash(admin.password, salt);
             }
-            const insertedGymAdmins = await GymAdmin.insertMany(gymAdminData);
+            await GymAdmin.insertMany(gymAdminData);
             // Insert sessions now, associate each session with a gym
             const sessionsToInsert = mockData.sessions.map((s, idx) => ({
                 ...s,

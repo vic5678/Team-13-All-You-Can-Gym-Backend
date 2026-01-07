@@ -9,7 +9,7 @@ import {
 } from '../controllers/sessionController.js';
 import { validateCreateSession } from '../middleware/validation.js';
 import { authenticate } from '../middleware/auth.js';
-import { ensureGymAdmin, authorizeGymForGymAdmin, authorizeSessionForGymAdmin } from '../middleware/gymAdminAuth.js';
+import { ensureGymAdmin, authorizeSessionForGymAdmin } from '../middleware/gymAdminAuth.js';
 
 const router = express.Router();
 
