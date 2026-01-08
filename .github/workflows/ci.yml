@@ -53,8 +53,9 @@ jobs:
 
       - name: Run k6 load and spike tests
         run: |
-          k6 run performance/load-test.js
-          k6 run performance/spike-test.js
+          # k6 run performance/load-test.js
+          # k6 run performance/spike-test.js
+          k6 run performance/breakpoint-test.js
 
   cd:
     runs-on: ubuntu-latest
