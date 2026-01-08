@@ -2,16 +2,17 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+/* global __ENV */
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 100 },    // Ramp up to 10 users over 2 minutes
-    { duration: '3m', target: 500 },    // Ramp up to 50 users over 5 minutes
-    { duration: '3m', target: 1000 },   // Ramp up to 100 users over 5 minutes
-    { duration: '3m', target: 500 },    // Ramp down to 50 users over 5 minutes
-    { duration: '1m', target: 0 },     // Ramp down to 0 users over 2 minutes
+    { duration: '1m', target: 100 },    // Ramp up to 100 users over 1 minute
+    { duration: '3m', target: 700 },    // Ramp up to 700 users over 3 minutes
+    { duration: '3m', target: 1400 },   // Ramp up to 1400 users over 3 minutes
+    { duration: '3m', target: 700 },    // Ramp down to 700 users over 3 minutes
+    { duration: '1m', target: 0 },     // Ramp down to 0 users over 1 minute
   ],
   thresholds: {
     http_req_duration: ['p(95)<500', 'p(99)<1000'],  // 95th percentile under 500ms, 99th under 1000ms
