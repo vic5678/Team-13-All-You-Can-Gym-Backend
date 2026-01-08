@@ -2,16 +2,17 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+/* global __ENV */
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
 export const options = {
   stages: [
     { duration: '10s', target: 10 },    // Baseline load - 10 users
-    { duration: '10s', target: 100 },    // Spike - jump to 100 users
+    { duration: '10s', target: 1000 },    // Spike - jump to 100 users
     { duration: '5s', target: 10 },    // Return to baseline
-    { duration: '10s', target: 200 },    // Second spike - double load
-    { duration: '10s', target: 50 },     // Gradual cool down
+    { duration: '10s', target: 1400 },    // Second spike - double load
+    { duration: '10s', target: 700 },     // Gradual cool down
     { duration: '5s', target: 0 },     // Ending phase
   ],
   thresholds: {
