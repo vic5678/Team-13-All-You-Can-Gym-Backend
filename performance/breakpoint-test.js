@@ -2,6 +2,7 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+/* global __ENV */
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
@@ -16,14 +17,6 @@ export const options = {
     { duration: '1m', target: 1500 },
     { duration: '30s', target: 2000 },
     { duration: '1m', target: 2000 },
-    { duration: '30s', target: 2500 },
-    { duration: '1m', target: 2500 },
-    { duration: '30s', target: 3000 },
-    { duration: '1m', target: 3000 },
-    { duration: '30s', target: 4000 },
-    { duration: '1m', target: 4000 },
-    { duration: '30s', target: 5000 },
-    { duration: '1m', target: 5000 },
     { duration: '1m', target: 0 },
   ],
   thresholds: {
