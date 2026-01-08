@@ -46,5 +46,5 @@ export default function () {
     });
   });
   
-  sleep(0.1);  // Minimal sleep
+    sleep(Math.random() * 5);
 }
